@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import {
+    Animated,
     Dimensions,
+    Easing,
     StyleSheet,
     Text,
-    TouchableOpacity,
     View,
 } from 'react-native';
+import { GestureDetector } from 'react-native-gesture-handler';
+import { useMainViewModel } from './MianViewModel';
 
 const GRID_SIZE = 4;
 const BOARD_PADDING = 8;
@@ -16,29 +19,22 @@ const TILE_SIZE =
     (BOARD_WIDTH - BOARD_PADDING * 2 - TILE_MARGIN * 2 * GRID_SIZE) / GRID_SIZE;
 
 const TILE_COLORS: Record<number, { bg: string; text: string }> = {
-    0: { bg: '#cdc1b4', text: 'transparent' },
-    2: { bg: '#eee4da', text: '#776e65' },
-    4: { bg: '#ede0c8', text: '#776e65' },
-    8: { bg: '#f2b179', text: '#f9f6f2' },
-    16: { bg: '#f59563', text: '#f9f6f2' },
-    32: { bg: '#f67c5f', text: '#f9f6f2' },
-    64: { bg: '#f65e3b', text: '#f9f6f2' },
-    128: { bg: '#edcf72', text: '#f9f6f2' },
-    256: { bg: '#edcc61', text: '#f9f6f2' },
-    512: { bg: '#edc850', text: '#f9f6f2' },
-    1024: { bg: '#edc53f', text: '#f9f6f2' },
-    2048: { bg: '#edc22e', text: '#f9f6f2' },
+    0: { bg: '#b0c4de', text: 'transparent' },
+    2: { bg: '#dce8f5', text: '#2c4a6e' },
+    4: { bg: '#a8c8f0', text: '#1a3a5c' },
+    8: { bg: '#93b8e0', text: '#f0f6ff' },
+    16: { bg: '#6a9fd4', text: '#f0f6ff' },
+    32: { bg: '#4a87c8', text: '#f0f6ff' },
+    64: { bg: '#2e6fbc', text: '#f0f6ff' },
+    128: { bg: '#1a56a0', text: '#f0f6ff' },
+    256: { bg: '#154490', text: '#f0f6ff' },
+    512: { bg: '#0f3278', text: '#f0f6ff' },
+    1024: { bg: '#0a2260', text: '#f0f6ff' },
+    2048: { bg: '#051248', text: '#f0f6ff' },
 };
 
-const SAMPLE_BOARD: number[][] = [
-    [2, 0, 4, 0],
-    [0, 16, 0, 2],
-    [8, 0, 128, 4],
-    [0, 2, 0, 32],
-];
-
 function getTileStyle(value: number) {
-    return TILE_COLORS[value] ?? { bg: '#3c3a32', text: '#f9f6f2' };
+    return TILE_COLORS[value] ?? { bg: '#020c30', text: '#f0f6ff' };
 }
 
 function getTileFontSize(value: number) {
@@ -47,10 +43,45 @@ function getTileFontSize(value: number) {
     return 22;
 }
 
-function Tile({ value }: { value: number }) {
+function Tile({
+    value,
+    isMerged,
+    mergeAnimationTick,
+}: {
+    value: number;
+    isMerged: boolean;
+    mergeAnimationTick: number;
+}) {
     const colors = getTileStyle(value);
+    const scale = useRef(new Animated.Value(1)).current;
+
+    useEffect(() => {
+        if (!isMerged || value === 0) {
+            return;
+        }
+        scale.setValue(1);
+        Animated.sequence([
+            Animated.timing(scale, {
+                toValue: 1.15,
+                duration: 90,
+                easing: Easing.out(Easing.quad),
+                useNativeDriver: true,
+            }),
+            Animated.timing(scale, {
+                toValue: 1,
+                duration: 100,
+                easing: Easing.in(Easing.quad),
+                useNativeDriver: true,
+            }),
+        ]).start();
+    }, [isMerged, mergeAnimationTick, scale, value]);
+
     return (
-        <View style={[styles.tile, { backgroundColor: colors.bg }]}>
+        <Animated.View
+            style={[
+                styles.tile,
+                { backgroundColor: colors.bg, transform: [{ scale }] },
+            ]}>
             {value > 0 && (
                 <Text
                     style={[
@@ -60,7 +91,7 @@ function Tile({ value }: { value: number }) {
                     {value}
                 </Text>
             )}
-        </View>
+        </Animated.View>
     );
 }
 
@@ -74,13 +105,17 @@ function ScoreBox({ label, score }: { label: string; score: number }) {
 }
 
 const MainView = () => {
+    const { board, score, bestScore, mergedCells, mergeAnimationTick, gesture } =
+        useMainViewModel();
+    const mergedCellSet = useMemo(() => new Set(mergedCells), [mergedCells]);
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.title}>2048</Text>
                 <View style={styles.scoresRow}>
-                    <ScoreBox label="SCORE" score={1284} />
-                    <ScoreBox label="BEST" score={5720} />
+                    <ScoreBox label="SCORE" score={score} />
+                    <ScoreBox label="BEST" score={bestScore} />
                 </View>
             </View>
 
@@ -94,15 +129,22 @@ const MainView = () => {
         </TouchableOpacity>
       </View> */}
 
-            <View style={styles.board}>
-                {SAMPLE_BOARD.map((row, rowIndex) => (
-                    <View key={rowIndex} style={styles.row}>
-                        {row.map((cell, colIndex) => (
-                            <Tile key={`${rowIndex}-${colIndex}`} value={cell} />
-                        ))}
-                    </View>
-                ))}
-            </View>
+            <GestureDetector gesture={gesture}>
+                <View style={styles.board}>
+                    {board.map((row, rowIndex) => (
+                        <View key={rowIndex} style={styles.row}>
+                            {row.map((cell, colIndex) => (
+                                <Tile
+                                    key={`${rowIndex}-${colIndex}`}
+                                    value={cell}
+                                    isMerged={mergedCellSet.has(`${rowIndex}-${colIndex}`)}
+                                    mergeAnimationTick={mergeAnimationTick}
+                                />
+                            ))}
+                        </View>
+                    ))}
+                </View>
+            </GestureDetector>
 
             <Text style={styles.instructions}>
                 Swipe to move the tiles. When two tiles with the same number touch, they
@@ -115,7 +157,7 @@ const MainView = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#faf8ef',
+        backgroundColor: '#e8f0fb',
         alignItems: 'center',
         paddingHorizontal: 20,
         paddingTop: 24,
@@ -130,14 +172,14 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 64,
         fontWeight: '800',
-        color: '#776e65',
+        color: '#1a4a8a',
     },
     scoresRow: {
         flexDirection: 'row',
         gap: 8,
     },
     scoreBox: {
-        backgroundColor: '#bbada0',
+        backgroundColor: '#3a6fbc',
         borderRadius: 6,
         paddingHorizontal: 20,
         paddingVertical: 8,
@@ -147,7 +189,7 @@ const styles = StyleSheet.create({
     scoreLabel: {
         fontSize: 12,
         fontWeight: '600',
-        color: '#eee4da',
+        color: '#c5daf5',
         letterSpacing: 1,
     },
     scoreValue: {
@@ -165,7 +207,7 @@ const styles = StyleSheet.create({
     },
     tagline: {
         fontSize: 15,
-        color: '#776e65',
+        color: '#2c4a6e',
         flex: 1,
         marginRight: 12,
     },
@@ -173,7 +215,7 @@ const styles = StyleSheet.create({
         fontWeight: '700',
     },
     newGameButton: {
-        backgroundColor: '#8f7a66',
+        backgroundColor: '#2e6fbc',
         borderRadius: 6,
         paddingHorizontal: 18,
         paddingVertical: 12,
@@ -181,11 +223,11 @@ const styles = StyleSheet.create({
     newGameText: {
         fontSize: 15,
         fontWeight: '700',
-        color: '#f9f6f2',
+        color: '#f0f6ff',
     },
     board: {
         width: BOARD_WIDTH,
-        backgroundColor: '#bbada0',
+        backgroundColor: '#4a7fc1',
         borderRadius: 8,
         padding: BOARD_PADDING,
     },
@@ -207,7 +249,7 @@ const styles = StyleSheet.create({
     instructions: {
         marginTop: 20,
         fontSize: 14,
-        color: '#776e65',
+        color: '#2c4a6e',
         textAlign: 'center',
         lineHeight: 20,
         paddingHorizontal: 10,
