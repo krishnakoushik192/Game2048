@@ -11,7 +11,11 @@ function App() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
-        <StatusBar barStyle="dark-content" backgroundColor="#faf8ef" />
+        <StatusBar
+          barStyle="dark-content"
+          backgroundColor="#faf8ef"
+          translucent={false}
+        />
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
           <MainView />
         </SafeAreaView>
@@ -23,6 +27,7 @@ function App() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+    backgroundColor: '#faf8ef',
   },
   container: {
     flex: 1,
