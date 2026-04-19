@@ -7,13 +7,15 @@ import {
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import MainView from './src/MainView';
 
+const BG = '#080c18';
+
 function App() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
         <StatusBar
-          barStyle="dark-content"
-          backgroundColor="#faf8ef"
+          barStyle="light-content"
+          backgroundColor={BG}
           translucent={false}
         />
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -27,11 +29,13 @@ function App() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#faf8ef',
+    backgroundColor: BG,
   },
   container: {
     flex: 1,
-    backgroundColor: '#faf8ef',
+    backgroundColor: BG,
+    borderWidth: 1,
+    borderColor: 'rgba(0,100,255,0.25)',
   },
 });
 

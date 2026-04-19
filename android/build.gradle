@@ -19,3 +19,12 @@ buildscript {
 }
 
 apply plugin: "com.facebook.react.rootproject"
+
+gradle.taskGraph.whenReady { taskGraph ->
+    taskGraph.allTasks.findAll { it.name.endsWith("SourcesJar") }.each { sourcesJarTask ->
+        def codegenTask = sourcesJarTask.project.tasks.findByName("generateCodegenArtifactsFromSchema")
+        if (codegenTask != null) {
+            sourcesJarTask.dependsOn(codegenTask)
+        }
+    }
+}

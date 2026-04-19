@@ -207,6 +207,10 @@ export const useMainViewModel = () => {
         }
     }, []);
 
+    const openTutorial = useCallback(() => {
+        setShowTutorial(true);
+    }, []);
+
     useEffect(() => {
         const loadBestScore = async () => {
             try {
@@ -449,5 +453,6 @@ export const useMainViewModel = () => {
         undoMove,
         keepPlaying,
         dismissTutorial,
+        openTutorial,
     };
 };

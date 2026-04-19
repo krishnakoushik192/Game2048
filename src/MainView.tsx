@@ -13,32 +13,52 @@ import { GestureDetector } from 'react-native-gesture-handler';
 import { useMainViewModel } from './MianViewModel';
 
 const GRID_SIZE = 4;
-const BOARD_PADDING = 8;
+const BOARD_PADDING = 10;
 const TILE_MARGIN = 5;
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const BOARD_WIDTH = Math.min(SCREEN_WIDTH - 32, 400);
+const BOARD_WIDTH = Math.min(SCREEN_WIDTH - 40, 380);
 const TILE_SIZE =
     (BOARD_WIDTH - BOARD_PADDING * 2 - TILE_MARGIN * 2 * GRID_SIZE) / GRID_SIZE;
 
-const TILE_COLORS: Record<number, { bg: string; text: string }> = {
-    0: { bg: '#cdc1b4', text: 'transparent' },
-    2: { bg: '#eee4da', text: '#776e65' },
-    4: { bg: '#ede0c8', text: '#776e65' },
-    8: { bg: '#f2b179', text: '#f9f6f2' },
-    16: { bg: '#f59563', text: '#f9f6f2' },
-    32: { bg: '#f67c5f', text: '#f9f6f2' },
-    64: { bg: '#f65e3b', text: '#f9f6f2' },
-    128: { bg: '#edcf72', text: '#f9f6f2' },
-    256: { bg: '#edcc61', text: '#f9f6f2' },
-    512: { bg: '#edc850', text: '#f9f6f2' },
-    1024: { bg: '#edc53f', text: '#f9f6f2' },
-    2048: { bg: '#edc22e', text: '#f9f6f2' },
-    4096: { bg: '#3c3a32', text: '#f9f6f2' },
-    8192: { bg: '#3c3a32', text: '#f9f6f2' },
+const T = {
+    bg: '#080c18',
+    boardBg: 'rgba(15,20,45,0.9)',
+    emptyCell: 'rgba(255,255,255,0.04)',
+    emptyCellBorder: 'rgba(255,255,255,0.07)',
+    cyan: '#00e5ff',
+    green: '#39ff14',
+    pink: '#ff2d78',
+    magenta: '#e040fb',
+    gold: '#ffd740',
+    lime: '#76ff03',
+    amber: '#ffab00',
+    white: '#ffffff',
+    dim: 'rgba(255,255,255,0.5)',
+    cardBg: 'rgba(255,255,255,0.05)',
+    cardBorder: 'rgba(255,255,255,0.10)',
+    btnBg: 'rgba(255,255,255,0.07)',
+    btnBorder: 'rgba(255,255,255,0.14)',
+};
+
+const TILE_COLORS: Record<number, { bg: string; text: string; border: string }> = {
+    0:    { bg: T.emptyCell, text: 'transparent', border: T.emptyCellBorder },
+    2:    { bg: 'rgba(0,229,255,0.10)', text: '#00e5ff', border: 'rgba(0,229,255,0.45)' },
+    4:    { bg: 'rgba(57,255,20,0.10)', text: '#39ff14', border: 'rgba(57,255,20,0.45)' },
+    8:    { bg: 'rgba(255,171,0,0.10)', text: '#ffab00', border: 'rgba(255,171,0,0.45)' },
+    16:   { bg: 'rgba(224,64,251,0.10)', text: '#e040fb', border: 'rgba(224,64,251,0.45)' },
+    32:   { bg: 'rgba(24,255,255,0.10)', text: '#18ffff', border: 'rgba(24,255,255,0.45)' },
+    64:   { bg: 'rgba(118,255,3,0.10)', text: '#76ff03', border: 'rgba(118,255,3,0.45)' },
+    128:  { bg: 'rgba(255,215,64,0.12)', text: '#ffd740', border: 'rgba(255,215,64,0.50)' },
+    256:  { bg: 'rgba(255,64,129,0.12)', text: '#ff4081', border: 'rgba(255,64,129,0.50)' },
+    512:  { bg: 'rgba(105,240,174,0.10)', text: '#69f0ae', border: 'rgba(105,240,174,0.45)' },
+    1024: { bg: 'rgba(176,190,197,0.08)', text: '#b0bec5', border: 'rgba(176,190,197,0.35)' },
+    2048: { bg: 'rgba(255,23,68,0.15)', text: '#ff1744', border: 'rgba(255,23,68,0.55)' },
+    4096: { bg: 'rgba(255,255,255,0.10)', text: '#ffffff', border: 'rgba(255,255,255,0.35)' },
+    8192: { bg: 'rgba(255,255,255,0.10)', text: '#ffffff', border: 'rgba(255,255,255,0.35)' },
 };
 
 function getTileStyle(value: number) {
-    return TILE_COLORS[value] ?? { bg: '#3c3a32', text: '#f9f6f2' };
+    return TILE_COLORS[value] ?? { bg: 'rgba(255,255,255,0.10)', text: '#ffffff', border: 'rgba(255,255,255,0.35)' };
 }
 
 function getTileFontSize(value: number) {
@@ -49,6 +69,14 @@ function getTileFontSize(value: number) {
     return TILE_SIZE * 0.18;
 }
 
+const PRO_TIPS = [
+    'Keep your highest number in a corner and try not to move it. This makes it easier to chain combos together.',
+    'Try to keep your tiles organized in a snake pattern for better control of the board.',
+    'Focus on building one big tile rather than spreading values across the board.',
+    'Think two moves ahead. Consider where new tiles might appear after your swipe.',
+];
+
+/* ─── Tile ─── */
 function Tile({
     value,
     isMerged,
@@ -90,6 +118,8 @@ function Tile({
                 styles.tile,
                 {
                     backgroundColor: colors.bg,
+                    borderColor: colors.border,
+                    borderWidth: value > 0 ? 1.5 : 1,
                     transform: [{ scale: isMerged && value > 0 ? scale : 1 }],
                 },
             ]}>
@@ -108,6 +138,7 @@ function Tile({
     );
 }
 
+/* ─── High Score Banner ─── */
 function HighScoreBanner({ visible }: { visible: boolean }) {
     const scale = useRef(new Animated.Value(0)).current;
     const opacity = useRef(new Animated.Value(0)).current;
@@ -156,6 +187,7 @@ function HighScoreBanner({ visible }: { visible: boolean }) {
     );
 }
 
+/* ─── Score Box ─── */
 function ScoreBox({
     label,
     score,
@@ -171,6 +203,7 @@ function ScoreBox({
     const addedOpacity = useRef(new Animated.Value(0)).current;
     const addedTranslateY = useRef(new Animated.Value(0)).current;
     const [showAdded, setShowAdded] = useState(false);
+    const labelColor = label === 'SCORE' ? T.pink : T.cyan;
 
     useEffect(() => {
         if (!scoreBumpTick || !scoreAdded || scoreAdded <= 0) { return; }
@@ -202,7 +235,7 @@ function ScoreBox({
 
     return (
         <View style={styles.scoreBox}>
-            <Text style={styles.scoreLabel}>{label}</Text>
+            <Text style={[styles.scoreLabel, { color: labelColor }]}>{label}</Text>
             <Animated.Text
                 style={[
                     styles.scoreValue,
@@ -226,36 +259,115 @@ function ScoreBox({
     );
 }
 
-function IconButton({
-    onPress,
-    label,
-    icon,
-    disabled,
-}: {
-    onPress: () => void;
-    label: string;
-    icon: string;
-    disabled?: boolean;
-}) {
+/* ─── Grid Icon (top-left header) ─── */
+function GridIcon() {
+    const sq = {
+        width: 9,
+        height: 9,
+        borderRadius: 2,
+        backgroundColor: T.white,
+    };
     return (
-        <Pressable
-            onPress={onPress}
-            disabled={disabled}
-            style={({ pressed }) => [
-                styles.iconButton,
-                pressed && styles.iconButtonPressed,
-                disabled && styles.iconButtonDisabled,
-            ]}
-            accessibilityLabel={label}
-            accessibilityRole="button"
-            android_ripple={{ color: 'rgba(119,110,101,0.3)', borderless: false }}>
-            <Text style={[styles.iconButtonText, disabled && styles.iconButtonTextDisabled]}>
-                {icon}
-            </Text>
-        </Pressable>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', width: 22, gap: 3 }}>
+            <View style={sq} />
+            <View style={sq} />
+            <View style={sq} />
+            <View style={sq} />
+        </View>
     );
 }
 
+/* ─── Mini Tile (tutorial / onboarding) ─── */
+function MiniTile({ value, size = 44 }: { value: number; size?: number }) {
+    const colors = getTileStyle(value);
+    const fontSize = value >= 1000 ? size * 0.26 : value >= 100 ? size * 0.32 : size * 0.4;
+    return (
+        <View
+            style={{
+                width: size,
+                height: size,
+                borderRadius: 8,
+                backgroundColor: colors.bg,
+                borderWidth: value > 0 ? 1.5 : 1,
+                borderColor: colors.border,
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: 2,
+            }}>
+            {value > 0 && (
+                <Text style={{ color: colors.text, fontSize, fontWeight: '800' }}>
+                    {value}
+                </Text>
+            )}
+        </View>
+    );
+}
+
+/* ─── Merge Example (tutorial) ─── */
+function MergeExample({
+    from1,
+    from2,
+    result,
+    scoreGain,
+}: {
+    from1: number;
+    from2: number;
+    result: number;
+    scoreGain: number;
+}) {
+    return (
+        <View style={{ alignItems: 'center', marginVertical: 6 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <MiniTile value={from1} />
+                <Text style={{ fontSize: 18, fontWeight: '700', color: T.dim, marginHorizontal: 4 }}>+</Text>
+                <MiniTile value={from2} />
+                <Text style={{ fontSize: 18, fontWeight: '700', color: T.dim, marginHorizontal: 4 }}>=</Text>
+                <MiniTile value={result} />
+            </View>
+            <Text style={{ fontSize: 12, fontWeight: '600', color: T.gold, marginTop: 4 }}>
+                +{scoreGain} points!
+            </Text>
+        </View>
+    );
+}
+
+/* ─── Pro Tip Card ─── */
+function ProTipCard() {
+    const [tipIndex, setTipIndex] = useState(0);
+    const fadeAnim = useRef(new Animated.Value(1)).current;
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            Animated.timing(fadeAnim, {
+                toValue: 0,
+                duration: 300,
+                useNativeDriver: true,
+            }).start(() => {
+                setTipIndex(prev => (prev + 1) % PRO_TIPS.length);
+                Animated.timing(fadeAnim, {
+                    toValue: 1,
+                    duration: 400,
+                    useNativeDriver: true,
+                }).start();
+            });
+        }, 8000);
+        return () => clearInterval(interval);
+    }, [fadeAnim]);
+
+    return (
+        <View style={styles.proTipCard}>
+            <View style={styles.proTipHeader}>
+                <Text style={styles.proTipTitle}>Pro Tip</Text>
+                <View style={styles.proTipIndicator} />
+            </View>
+            <Animated.Text style={[styles.proTipText, { opacity: fadeAnim }]}>
+                {PRO_TIPS[tipIndex]}
+            </Animated.Text>
+        </View>
+    );
+}
+
+/* ─── Tutorial / Onboarding Overlay ─── */
 function TutorialOverlay({
     visible,
     onDismiss,
@@ -264,34 +376,103 @@ function TutorialOverlay({
     onDismiss: () => void;
 }) {
     const [step, setStep] = useState(0);
-    const opacity = useRef(new Animated.Value(0)).current;
+    const backdropOpacity = useRef(new Animated.Value(0)).current;
+    const contentOpacity = useRef(new Animated.Value(0)).current;
+    const contentSlide = useRef(new Animated.Value(30)).current;
 
     useEffect(() => {
         if (visible) {
-            opacity.setValue(0);
-            Animated.timing(opacity, {
-                toValue: 1,
-                duration: 300,
-                useNativeDriver: true,
-            }).start();
+            setStep(0);
+            backdropOpacity.setValue(0);
+            contentOpacity.setValue(0);
+            contentSlide.setValue(30);
+            Animated.sequence([
+                Animated.timing(backdropOpacity, {
+                    toValue: 1,
+                    duration: 300,
+                    useNativeDriver: true,
+                }),
+                Animated.parallel([
+                    Animated.timing(contentOpacity, {
+                        toValue: 1,
+                        duration: 350,
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(contentSlide, {
+                        toValue: 0,
+                        duration: 350,
+                        easing: Easing.out(Easing.quad),
+                        useNativeDriver: true,
+                    }),
+                ]),
+            ]).start();
         }
-    }, [visible, opacity]);
+    }, [visible, backdropOpacity, contentOpacity, contentSlide]);
+
+    const animateToNextStep = (next: number) => {
+        Animated.parallel([
+            Animated.timing(contentOpacity, { toValue: 0, duration: 150, useNativeDriver: true }),
+            Animated.timing(contentSlide, { toValue: -20, duration: 150, useNativeDriver: true }),
+        ]).start(() => {
+            setStep(next);
+            contentSlide.setValue(30);
+            Animated.parallel([
+                Animated.timing(contentOpacity, { toValue: 1, duration: 250, useNativeDriver: true }),
+                Animated.timing(contentSlide, { toValue: 0, duration: 250, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+            ]).start();
+        });
+    };
 
     const slides = [
         {
-            title: 'Welcome to 2048!',
-            icon: '👆',
-            text: 'Swipe in any direction to move all tiles on the board.',
+            title: 'Swipe in any direction to move all tiles.',
+            body: 'Tiles with the same number merge into one when they touch.',
+            visual: (
+                <View style={tutStyles.boardPreview}>
+                    <View style={tutStyles.boardGrid}>
+                        {[
+                            [0, 2, 0, 0],
+                            [4, 0, 2, 0],
+                            [0, 0, 0, 0],
+                            [0, 4, 0, 0],
+                        ].map((row, ri) => (
+                            <View key={ri} style={tutStyles.boardRow}>
+                                {row.map((v, ci) => (
+                                    <MiniTile key={ci} value={v} size={52} />
+                                ))}
+                            </View>
+                        ))}
+                    </View>
+                    <View style={tutStyles.handOverlay}>
+                        <Text style={{ fontSize: 40 }}>👋</Text>
+                        <View style={tutStyles.swipeLine} />
+                    </View>
+                </View>
+            ),
         },
         {
-            title: 'Merge Tiles',
-            icon: '🔢',
-            text: 'When two tiles with the same number touch, they merge into one with double the value!',
+            title: 'Same numbers merge together!',
+            body: 'Every merge adds the new tile\'s value to your score. Bigger merges = more points!',
+            visual: (
+                <View style={{ marginTop: 8 }}>
+                    <MergeExample from1={2} from2={2} result={4} scoreGain={4} />
+                    <MergeExample from1={4} from2={4} result={8} scoreGain={8} />
+                    <MergeExample from1={128} from2={128} result={256} scoreGain={256} />
+                </View>
+            ),
         },
         {
-            title: 'Reach 2048!',
-            icon: '🎯',
-            text: 'Your score and best score are shown at the top. Aim for the 2048 tile to win!',
+            title: 'Reach 2048 to win!',
+            body: 'Build up to the 2048 tile. You can keep playing afterwards for an even higher score.',
+            visual: (
+                <View style={{ flexDirection: 'row', gap: 4, marginTop: 12 }}>
+                    <MiniTile value={128} size={50} />
+                    <MiniTile value={256} size={50} />
+                    <MiniTile value={512} size={50} />
+                    <MiniTile value={1024} size={50} />
+                    <MiniTile value={2048} size={50} />
+                </View>
+            ),
         },
     ];
 
@@ -302,51 +483,60 @@ function TutorialOverlay({
 
     return (
         <Modal visible transparent animationType="none" statusBarTranslucent>
-            <Animated.View style={[styles.tutorialBackdrop, { opacity }]}>
-                <View style={styles.tutorialCard}>
-                    <Text style={styles.tutorialIcon}>{slide.icon}</Text>
-                    <Text style={styles.tutorialTitle}>{slide.title}</Text>
-                    <Text style={styles.tutorialText}>{slide.text}</Text>
-
-                    <View style={styles.tutorialDots}>
-                        {slides.map((_, i) => (
-                            <View
-                                key={i}
-                                style={[
-                                    styles.tutorialDot,
-                                    i === step && styles.tutorialDotActive,
-                                ]}
-                            />
-                        ))}
-                    </View>
-
-                    <View style={styles.tutorialButtons}>
-                        <Pressable
-                            onPress={onDismiss}
-                            style={styles.tutorialSkipButton}>
-                            <Text style={styles.tutorialSkipText}>Skip</Text>
-                        </Pressable>
-                        <Pressable
-                            onPress={() => {
-                                if (isLast) {
-                                    onDismiss();
-                                } else {
-                                    setStep(s => s + 1);
-                                }
-                            }}
-                            style={styles.tutorialNextButton}
-                            android_ripple={{ color: '#5a3e28' }}>
-                            <Text style={styles.tutorialNextText}>
-                                {isLast ? 'Start Playing' : 'Next'}
-                            </Text>
-                        </Pressable>
-                    </View>
+            <Animated.View style={[tutStyles.backdrop, { opacity: backdropOpacity }]}>
+                {/* Header */}
+                <View style={tutStyles.header}>
+                    <Text style={tutStyles.logo}>2048</Text>
+                    <Pressable onPress={onDismiss} hitSlop={16}>
+                        <Text style={tutStyles.skip}>SKIP</Text>
+                    </Pressable>
                 </View>
+
+                {/* Step indicator */}
+                <View style={tutStyles.stepBar}>
+                    {slides.map((_, i) => (
+                        <View
+                            key={i}
+                            style={[
+                                tutStyles.stepDot,
+                                i === step && tutStyles.stepDotActive,
+                            ]}
+                        />
+                    ))}
+                </View>
+
+                {/* Content */}
+                <Animated.View
+                    style={[
+                        tutStyles.content,
+                        { opacity: contentOpacity, transform: [{ translateY: contentSlide }] },
+                    ]}>
+                    {slide.visual}
+
+                    <Text style={tutStyles.title}>{slide.title}</Text>
+                    <Text style={tutStyles.body}>{slide.body}</Text>
+                </Animated.View>
+
+                {/* Next / Let's Go button */}
+                <Pressable
+                    onPress={() => {
+                        if (isLast) { onDismiss(); }
+                        else { animateToNextStep(step + 1); }
+                    }}
+                    style={({ pressed }) => [
+                        tutStyles.nextBtn,
+                        pressed && { opacity: 0.85 },
+                    ]}>
+                    <Text style={tutStyles.nextText}>
+                        {isLast ? "LET'S GO!" : 'NEXT'}
+                    </Text>
+                </Pressable>
             </Animated.View>
         </Modal>
     );
 }
 
+/* ─── Main View ─── */
 const MainView = () => {
     const {
         board,
@@ -368,6 +558,7 @@ const MainView = () => {
         undoMove,
         keepPlaying,
         dismissTutorial,
+        openTutorial,
     } = useMainViewModel();
 
     const mergedCellSet = useMemo(() => new Set(mergedCells), [mergedCells]);
@@ -377,41 +568,28 @@ const MainView = () => {
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
-                <View style={styles.headerTop}>
-                    <Text style={styles.title}>2048</Text>
-                    <View style={styles.scoresRow}>
-                        <ScoreBox
-                            label="SCORE"
-                            score={score}
-                            scoreAdded={scoreAdded}
-                            scoreBumpTick={scoreBumpTick}
-                        />
-                        <ScoreBox label="BEST" score={bestScore} />
+                <View style={styles.headerTopRow}>
+                    <View style={styles.headerIconBtn}>
+                        <GridIcon />
                     </View>
+                    <Text style={styles.title}>2048</Text>
+                    <Pressable onPress={openTutorial} hitSlop={12} style={styles.profileIcon}>
+                        <Text style={{ color: T.cyan, fontSize: 18, fontWeight: '800' }}>?</Text>
+                    </Pressable>
                 </View>
 
-                <View style={styles.controlsRow}>
-                    <Text style={styles.tagline}>
-                        Join the numbers and get to the{' '}
-                        <Text style={styles.taglineBold}>2048 tile!</Text>
-                    </Text>
-                    <View style={styles.controlButtons}>
-                        <IconButton
-                            onPress={undoMove}
-                            label="Undo"
-                            icon="↩"
-                            disabled={!canUndo}
-                        />
-                        <IconButton
-                            onPress={retryGame}
-                            label="New Game"
-                            icon="↻"
-                        />
-                    </View>
+                <View style={styles.scoresRow}>
+                    <ScoreBox
+                        label="SCORE"
+                        score={score}
+                        scoreAdded={scoreAdded}
+                        scoreBumpTick={scoreBumpTick}
+                    />
+                    <ScoreBox label="BEST" score={bestScore} />
                 </View>
             </View>
 
-            {/* Game Grid */}
+            {/* Game Board */}
             <GestureDetector gesture={gesture}>
                 <View style={styles.board}>
                     {board.map((row, rowIndex) => (
@@ -434,11 +612,36 @@ const MainView = () => {
                 </View>
             </GestureDetector>
 
-            {/* Instructions */}
-            <Text style={styles.instructions}>
-                Swipe to move the tiles. When two tiles with the same number
-                touch, they merge into one!
-            </Text>
+            {/* Action Buttons */}
+            <View style={styles.buttonsRow}>
+                <Pressable
+                    onPress={undoMove}
+                    disabled={!canUndo}
+                    style={({ pressed }) => [
+                        styles.undoButton,
+                        pressed && styles.buttonPressed,
+                        !canUndo && styles.buttonDisabled,
+                    ]}
+                    accessibilityLabel="Undo"
+                    accessibilityRole="button">
+                    <Text style={[styles.undoIcon, !canUndo && styles.iconDisabled]}>↩</Text>
+                </Pressable>
+
+                <Pressable
+                    onPress={retryGame}
+                    style={({ pressed }) => [
+                        styles.newGameButton,
+                        pressed && styles.buttonPressed,
+                    ]}
+                    accessibilityLabel="New Game"
+                    accessibilityRole="button">
+                    <Text style={styles.newGameIcon}>↻</Text>
+                    <Text style={styles.newGameText}>New Game</Text>
+                </Pressable>
+            </View>
+
+            {/* Pro Tip */}
+            <ProTipCard />
 
             {/* High Score Banner */}
             <HighScoreBanner visible={showHighScoreAnimation} />
@@ -452,7 +655,7 @@ const MainView = () => {
                 onRequestClose={keepPlaying}>
                 <View style={styles.modalBackdrop}>
                     <View style={styles.modalCard}>
-                        <Text style={styles.winIcon}>🎉</Text>
+                        <Text style={styles.modalEmoji}>🎉</Text>
                         <Text style={styles.modalTitle}>You Win!</Text>
                         <Text style={styles.modalSubtitle}>
                             You reached the 2048 tile!
@@ -460,16 +663,14 @@ const MainView = () => {
                         <Text style={styles.modalScore}>Score: {score}</Text>
                         <View style={styles.modalButtonRow}>
                             <Pressable
-                                style={styles.keepPlayingButton}
-                                onPress={keepPlaying}
-                                android_ripple={{ color: '#5a3e28' }}>
-                                <Text style={styles.keepPlayingText}>Keep Playing</Text>
+                                style={styles.modalBtnSecondary}
+                                onPress={keepPlaying}>
+                                <Text style={styles.modalBtnSecondaryText}>Keep Playing</Text>
                             </Pressable>
                             <Pressable
-                                style={styles.retryButton}
-                                onPress={retryGame}
-                                android_ripple={{ color: '#5a3e28' }}>
-                                <Text style={styles.retryButtonText}>New Game</Text>
+                                style={styles.modalBtnPrimary}
+                                onPress={retryGame}>
+                                <Text style={styles.modalBtnPrimaryText}>New Game</Text>
                             </Pressable>
                         </View>
                     </View>
@@ -485,7 +686,7 @@ const MainView = () => {
                 onRequestClose={() => { }}>
                 <View style={styles.modalBackdrop}>
                     <View style={styles.modalCard}>
-                        <Text style={styles.gameOverIcon}>😔</Text>
+                        <Text style={styles.modalEmoji}>😔</Text>
                         <Text style={styles.modalTitle}>Game Over</Text>
                         <Text style={styles.modalScore}>Score: {score}</Text>
                         {score === bestScore && score > 0 && (
@@ -494,10 +695,9 @@ const MainView = () => {
                             </Text>
                         )}
                         <Pressable
-                            style={styles.retryButton}
-                            onPress={retryGame}
-                            android_ripple={{ color: '#5a3e28' }}>
-                            <Text style={styles.retryButtonText}>Try Again</Text>
+                            style={styles.modalBtnPrimary}
+                            onPress={retryGame}>
+                            <Text style={styles.modalBtnPrimaryText}>Try Again</Text>
                         </Pressable>
                     </View>
                 </View>
@@ -512,116 +712,198 @@ const MainView = () => {
     );
 };
 
-const styles = StyleSheet.create({
-    container: {
+/* ═══ Tutorial Styles ═══ */
+const tutStyles = StyleSheet.create({
+    backdrop: {
         flex: 1,
-        backgroundColor: '#faf8ef',
-        alignItems: 'center',
-        paddingHorizontal: 20,
+        backgroundColor: 'rgba(8,12,24,0.96)',
+        paddingHorizontal: 24,
         paddingTop: 48,
-        justifyContent: 'space-between',
+        paddingBottom: 32,
     },
-
-    // Header
     header: {
-        width: '100%',
-        maxWidth: 400,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         marginBottom: 16,
     },
-    headerTop: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 8,
+    logo: {
+        fontSize: 36,
+        fontWeight: '900',
+        color: T.green,
     },
-    title: {
-        fontSize: 56,
-        fontWeight: '800',
-        color: '#776e65',
-        lineHeight: 64,
-    },
-    scoresRow: {
-        flexDirection: 'row',
-        gap: 6,
-    },
-    scoreBox: {
-        backgroundColor: '#bbada0',
-        borderRadius: 6,
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        alignItems: 'center',
-        minWidth: 72,
-        position: 'relative',
-    },
-    scoreLabel: {
-        fontSize: 11,
+    skip: {
+        fontSize: 15,
         fontWeight: '600',
-        color: '#eee4da',
+        color: T.white,
         letterSpacing: 1,
     },
-    scoreValue: {
-        fontSize: 20,
-        fontWeight: '700',
-        color: '#ffffff',
-        marginTop: 1,
-    },
-    scoreAdded: {
-        position: 'absolute',
-        bottom: -2,
-        fontSize: 14,
-        fontWeight: '700',
-        color: '#776e65',
-    },
-
-    // Controls
-    controlsRow: {
+    stepBar: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 6,
+        marginBottom: 20,
     },
-    tagline: {
-        fontSize: 14,
-        color: '#776e65',
+    stepDot: {
+        width: 28,
+        height: 4,
+        borderRadius: 2,
+        backgroundColor: 'rgba(255,255,255,0.15)',
+    },
+    stepDotActive: {
+        backgroundColor: T.pink,
+    },
+    content: {
         flex: 1,
-        marginRight: 12,
-        lineHeight: 20,
-    },
-    taglineBold: {
-        fontWeight: '700',
-    },
-    controlButtons: {
-        flexDirection: 'row',
-        gap: 8,
-    },
-    iconButton: {
-        backgroundColor: '#8f7a66',
-        borderRadius: 6,
-        width: 46,
-        height: 46,
         alignItems: 'center',
         justifyContent: 'center',
     },
-    iconButtonPressed: {
-        backgroundColor: '#7a6658',
+    boardPreview: {
+        position: 'relative',
+        marginBottom: 24,
     },
-    iconButtonDisabled: {
-        backgroundColor: '#c4b8ad',
+    boardGrid: {
+        backgroundColor: T.boardBg,
+        borderRadius: 12,
+        padding: 6,
     },
-    iconButtonText: {
-        fontSize: 22,
-        fontWeight: '700',
-        color: '#f9f6f2',
+    boardRow: {
+        flexDirection: 'row',
     },
-    iconButtonTextDisabled: {
-        color: '#e8e0d8',
+    handOverlay: {
+        position: 'absolute',
+        bottom: 40,
+        left: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    swipeLine: {
+        width: 80,
+        height: 3,
+        borderRadius: 2,
+        backgroundColor: T.pink,
+        marginLeft: 4,
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: '800',
+        color: T.white,
+        textAlign: 'center',
+        marginBottom: 10,
+        lineHeight: 32,
+    },
+    body: {
+        fontSize: 14,
+        color: T.dim,
+        textAlign: 'center',
+        lineHeight: 21,
+        paddingHorizontal: 12,
+    },
+    nextBtn: {
+        backgroundColor: T.pink,
+        borderRadius: 14,
+        paddingVertical: 16,
+        alignItems: 'center',
+        marginTop: 20,
+    },
+    nextText: {
+        fontSize: 16,
+        fontWeight: '800',
+        color: T.white,
+        letterSpacing: 1.5,
+    },
+});
+
+/* ═══ Main Styles ═══ */
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: T.bg,
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingTop: 16,
+        justifyContent: 'space-between',
+        paddingBottom: 12,
     },
 
-    // Board
+    /* Header */
+    header: {
+        width: '100%',
+        maxWidth: 400,
+        marginBottom: 8,
+    },
+    headerTopRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 12,
+    },
+    headerIconBtn: {
+        width: 40,
+        height: 40,
+        borderRadius: 10,
+        backgroundColor: T.cardBg,
+        borderWidth: 1,
+        borderColor: T.cardBorder,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    title: {
+        fontSize: 48,
+        fontWeight: '900',
+        color: T.cyan,
+        letterSpacing: 2,
+    },
+    profileIcon: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        borderWidth: 2,
+        borderColor: T.cyan,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0,229,255,0.08)',
+    },
+
+    /* Scores */
+    scoresRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    scoreBox: {
+        flex: 1,
+        alignItems: 'flex-start',
+        position: 'relative',
+        paddingVertical: 4,
+    },
+    scoreLabel: {
+        fontSize: 12,
+        fontWeight: '700',
+        letterSpacing: 2,
+    },
+    scoreValue: {
+        fontSize: 36,
+        fontWeight: '800',
+        color: T.white,
+        marginTop: 0,
+    },
+    scoreAdded: {
+        position: 'absolute',
+        right: 4,
+        top: 8,
+        fontSize: 14,
+        fontWeight: '700',
+        color: T.pink,
+    },
+
+    /* Board */
     board: {
         width: BOARD_WIDTH,
-        backgroundColor: '#bbada0',
-        borderRadius: 8,
+        backgroundColor: T.boardBg,
+        borderRadius: 14,
         padding: BOARD_PADDING,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.06)',
     },
     row: {
         flexDirection: 'row',
@@ -631,7 +913,7 @@ const styles = StyleSheet.create({
         width: TILE_SIZE,
         height: TILE_SIZE,
         margin: TILE_MARGIN,
-        borderRadius: 4,
+        borderRadius: 10,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -639,18 +921,96 @@ const styles = StyleSheet.create({
         fontWeight: '800',
     },
 
-    // Instructions
-    instructions: {
+    /* Buttons */
+    buttonsRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 14,
         marginTop: 16,
-        fontSize: 14,
-        color: '#776e65',
-        textAlign: 'center',
-        lineHeight: 20,
-        paddingHorizontal: 10,
-        maxWidth: 400,
+    },
+    undoButton: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        backgroundColor: T.btnBg,
+        borderWidth: 1,
+        borderColor: T.btnBorder,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    undoIcon: {
+        fontSize: 22,
+        fontWeight: '700',
+        color: T.white,
+    },
+    newGameButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        backgroundColor: T.btnBg,
+        borderWidth: 1,
+        borderColor: T.btnBorder,
+        borderRadius: 25,
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+    },
+    newGameIcon: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: T.cyan,
+    },
+    newGameText: {
+        fontSize: 15,
+        fontWeight: '700',
+        color: T.white,
+    },
+    buttonPressed: {
+        opacity: 0.7,
+    },
+    buttonDisabled: {
+        opacity: 0.35,
+    },
+    iconDisabled: {
+        color: 'rgba(255,255,255,0.3)',
     },
 
-    // High Score Banner
+    /* Pro Tip Card */
+    proTipCard: {
+        width: '100%',
+        maxWidth: 400,
+        backgroundColor: T.cardBg,
+        borderWidth: 1,
+        borderColor: T.cardBorder,
+        borderRadius: 14,
+        padding: 16,
+        marginTop: 14,
+    },
+    proTipHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    proTipTitle: {
+        fontSize: 15,
+        fontWeight: '800',
+        color: T.pink,
+        fontStyle: 'italic',
+    },
+    proTipIndicator: {
+        width: 16,
+        height: 16,
+        borderRadius: 8,
+        borderWidth: 2,
+        borderColor: 'rgba(255,255,255,0.15)',
+    },
+    proTipText: {
+        fontSize: 13,
+        color: 'rgba(255,255,255,0.7)',
+        lineHeight: 19,
+    },
+
+    /* High Score Banner */
     highScoreOverlay: {
         ...StyleSheet.absoluteFillObject,
         justifyContent: 'center',
@@ -658,16 +1018,18 @@ const styles = StyleSheet.create({
         zIndex: 10,
     },
     highScoreBanner: {
-        backgroundColor: '#edc22e',
-        borderRadius: 16,
-        paddingVertical: 24,
-        paddingHorizontal: 36,
+        backgroundColor: 'rgba(255,215,64,0.18)',
+        borderWidth: 2,
+        borderColor: 'rgba(255,215,64,0.5)',
+        borderRadius: 20,
+        paddingVertical: 28,
+        paddingHorizontal: 40,
         alignItems: 'center',
         elevation: 12,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
+        shadowColor: T.gold,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.4,
+        shadowRadius: 20,
     },
     highScoreIcon: {
         fontSize: 48,
@@ -676,13 +1038,13 @@ const styles = StyleSheet.create({
     highScoreTitle: {
         fontSize: 28,
         fontWeight: '800',
-        color: '#776e65',
+        color: T.gold,
     },
 
-    // Modals
+    /* Modals */
     modalBackdrop: {
         flex: 1,
-        backgroundColor: 'rgba(238,228,218,0.73)',
+        backgroundColor: 'rgba(8,12,24,0.88)',
         justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: 24,
@@ -690,160 +1052,77 @@ const styles = StyleSheet.create({
     modalCard: {
         width: '100%',
         maxWidth: 320,
-        backgroundColor: '#faf8ef',
-        borderRadius: 12,
-        paddingVertical: 28,
-        paddingHorizontal: 24,
+        backgroundColor: 'rgba(20,25,50,0.95)',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.10)',
+        borderRadius: 20,
+        paddingVertical: 32,
+        paddingHorizontal: 28,
         alignItems: 'center',
-        elevation: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 12,
+        elevation: 12,
+        shadowColor: T.cyan,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.2,
+        shadowRadius: 20,
     },
-    winIcon: {
+    modalEmoji: {
         fontSize: 52,
-        marginBottom: 8,
-    },
-    gameOverIcon: {
-        fontSize: 52,
-        marginBottom: 8,
+        marginBottom: 10,
     },
     modalTitle: {
-        fontSize: 32,
+        fontSize: 30,
         fontWeight: '800',
-        color: '#776e65',
-        marginBottom: 4,
+        color: T.white,
+        marginBottom: 6,
     },
     modalSubtitle: {
-        fontSize: 16,
-        color: '#8f7a66',
+        fontSize: 15,
+        color: T.dim,
         marginBottom: 4,
     },
     modalScore: {
         fontSize: 20,
         fontWeight: '700',
-        color: '#bbada0',
+        color: T.cyan,
         marginBottom: 4,
     },
     modalBestLabel: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#edc22e',
+        color: T.gold,
         marginBottom: 8,
     },
     modalButtonRow: {
         flexDirection: 'row',
-        gap: 10,
-        marginTop: 12,
+        gap: 12,
+        marginTop: 16,
     },
-    keepPlayingButton: {
-        backgroundColor: '#bbada0',
-        borderRadius: 8,
+    modalBtnSecondary: {
+        borderRadius: 12,
+        borderWidth: 1.5,
+        borderColor: T.btnBorder,
         paddingVertical: 12,
         paddingHorizontal: 20,
         alignItems: 'center',
     },
-    keepPlayingText: {
-        color: '#f9f6f2',
-        fontSize: 16,
+    modalBtnSecondaryText: {
+        color: T.white,
+        fontSize: 15,
         fontWeight: '700',
     },
-    retryButton: {
-        backgroundColor: '#8f7a66',
-        borderRadius: 8,
+    modalBtnPrimary: {
+        backgroundColor: T.pink,
+        borderRadius: 12,
         minWidth: 120,
         paddingVertical: 12,
         paddingHorizontal: 20,
         alignItems: 'center',
         marginTop: 12,
     },
-    retryButtonText: {
-        color: '#f9f6f2',
-        fontSize: 16,
+    modalBtnPrimaryText: {
+        color: T.white,
+        fontSize: 15,
         fontWeight: '700',
-    },
-
-    // Tutorial
-    tutorialBackdrop: {
-        flex: 1,
-        backgroundColor: 'rgba(58,43,30,0.7)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingHorizontal: 24,
-    },
-    tutorialCard: {
-        width: '100%',
-        maxWidth: 320,
-        backgroundColor: '#faf8ef',
-        borderRadius: 16,
-        paddingVertical: 32,
-        paddingHorizontal: 28,
-        alignItems: 'center',
-    },
-    tutorialIcon: {
-        fontSize: 56,
-        marginBottom: 12,
-    },
-    tutorialTitle: {
-        fontSize: 26,
-        fontWeight: '800',
-        color: '#776e65',
-        marginBottom: 8,
-        textAlign: 'center',
-    },
-    tutorialText: {
-        fontSize: 16,
-        color: '#8f7a66',
-        textAlign: 'center',
-        lineHeight: 24,
-        marginBottom: 20,
-    },
-    tutorialDots: {
-        flexDirection: 'row',
-        gap: 8,
-        marginBottom: 24,
-    },
-    tutorialDot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: '#cdc1b4',
-    },
-    tutorialDotActive: {
-        backgroundColor: '#8f7a66',
-        width: 20,
-    },
-    tutorialButtons: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        width: '100%',
-        gap: 12,
-    },
-    tutorialSkipButton: {
-        flex: 1,
-        paddingVertical: 12,
-        alignItems: 'center',
-        borderRadius: 8,
-        borderWidth: 2,
-        borderColor: '#bbada0',
-    },
-    tutorialSkipText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#8f7a66',
-    },
-    tutorialNextButton: {
-        flex: 1,
-        paddingVertical: 12,
-        alignItems: 'center',
-        backgroundColor: '#8f7a66',
-        borderRadius: 8,
-    },
-    tutorialNextText: {
-        fontSize: 16,
-        fontWeight: '700',
-        color: '#f9f6f2',
     },
 });
 
