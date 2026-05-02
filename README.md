@@ -1,97 +1,137 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Game2048 🎮
 
-# Getting Started
+A modern React Native implementation of the classic 2048 puzzle game with swipe controls, score tracking, undo support, onboarding tutorial, and polished animations.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Project Overview 🧩
 
-## Step 1: Start Metro
+This project is a mobile 2048 game built with React Native and TypeScript.
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+- Platform support: Android and iOS
+- Core gameplay: 4x4 grid, swipe to move, equal tiles merge, score increases on merges
+- Persistence: best score and tutorial completion are saved with AsyncStorage
+- UX features: win modal, game over modal, high-score celebration banner, rotating pro tips, undo, and tutorial overlay
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+## Tech Stack 🛠️
 
-```sh
-# Using npm
+- React 19
+- React Native 0.84.1
+- TypeScript
+- `react-native-gesture-handler` for swipe/fling gestures
+- `react-native-safe-area-context` for safe area handling
+- `@react-native-async-storage/async-storage` for local persistence
+- Jest for basic rendering tests
+
+## How The App Is Structured 🏗️
+
+- `App.tsx`  
+  App root container with `GestureHandlerRootView`, `SafeAreaProvider`, `StatusBar`, and the main game screen.
+
+- `src/MainView.tsx`  
+  Presentation/UI layer for:
+
+  - Header and score cards
+  - 4x4 board rendering
+  - Action buttons (Undo, New Game)
+  - Win / Game Over modals
+  - High score banner
+  - Tutorial/onboarding overlay
+  - Pro tip card and tile animations
+
+- `src/MianViewModel.tsx`  
+  Game logic and state management layer (hook: `useMainViewModel`) for:
+
+  - Tile movement and merge rules (`left/right/up/down`)
+  - Random tile spawning (`2` in most cases, occasional `4`)
+  - Score and best-score calculations
+  - Undo history
+  - Win/game-over detection
+  - Gesture handling setup
+  - AsyncStorage integration
+
+- `index.js`  
+  React Native entry point, registers the app component.
+
+- `__tests__/App.test.tsx`  
+  Basic render test to ensure app boots in test environment.
+
+## Gameplay Rules 🎯
+
+- Board size is `4x4`.
+- Swipe in any direction to move all tiles.
+- Tiles with the same value merge when they collide.
+- Each merge adds the merged tile value to your score.
+- Reach tile `2048` to trigger the win state.
+- Continue after winning or start a new game.
+- Game ends when no moves are available.
+
+## Saved Data 💾
+
+The app stores the following values locally:
+
+- `@game2048_best_score` - highest score achieved
+- `@game2048_tutorial_seen` - whether onboarding was dismissed
+
+## Development Setup 🚀
+
+### Prerequisites ✅
+
+- Node.js `>= 22.11.0`
+- React Native environment configured ([official setup guide](https://reactnative.dev/docs/environment-setup))
+- Android Studio (for Android) and/or Xcode (for iOS)
+
+### Install Dependencies 📦
+
+```bash
+npm install
+```
+
+### Start Metro ▶️
+
+```bash
 npm start
-
-# OR using Yarn
-yarn start
 ```
 
-## Step 2: Build and run your app
+### Run on Android 🤖
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
-```sh
-# Using npm
+```bash
 npm run android
-
-# OR using Yarn
-yarn android
 ```
 
-### iOS
+### Run on iOS 🍎
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
+```bash
 bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
 bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
 npm run ios
-
-# OR using Yarn
-yarn ios
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+## Useful Scripts 🧪
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+- `npm start` - start Metro bundler
+- `npm run android` - build and run Android app
+- `npm run ios` - build and run iOS app
+- `npm run lint` - run ESLint
+- `npm test` - run Jest tests
 
-## Step 3: Modify your app
+## Android Build Notes 📱
 
-Now that you have successfully run the app, let's make changes!
+- Application ID: `com.game2048`
+- Min SDK: `24`
+- Target/Compile SDK: `36`
+- Version: `1.0` (`versionCode` 1)
+- Hermes is enabled (`android/gradle.properties`)
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+## Current Status ✅
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+The project is fully playable with polished UI and game-state persistence.  
+Next common improvements could include:
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+- Better unit/integration test coverage for move/merge logic
+- Animations for new tile spawn (a tracked state already exists)
+- Release signing configuration for production APK/AAB
 
-## Congratulations! :tada:
+## APK Placeholder 📥
 
-You've successfully run and modified your React Native App. :partying_face:
+APK download link:
 
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+- **APK 🚧:** [Download APK](https://drive.google.com/file/d/1B3zUbIT9LSAN-jwff7n-qnFMSNDjKBLb/view?usp=sharing)
