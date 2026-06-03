@@ -1,5 +1,6 @@
 import React from 'react';
-import { StatusBar, StyleSheet } from 'react-native';
+import './global.css';
+import { StatusBar } from 'react-native';
 import {
   SafeAreaProvider,
   SafeAreaView,
@@ -11,32 +12,21 @@ const BG = '#080c18';
 
 function App() {
   return (
-    <GestureHandlerRootView style={styles.root}>
+    <GestureHandlerRootView className="flex-1 bg-[#080c18]">
       <SafeAreaProvider>
         <StatusBar
           barStyle="light-content"
           backgroundColor={BG}
           translucent={false}
         />
-        <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+        <SafeAreaView
+          className="flex-1 border border-[rgba(0,100,255,0.25)] bg-[#080c18]"
+          edges={['top', 'bottom']}>
           <MainView />
         </SafeAreaView>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: BG,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: BG,
-    borderWidth: 1,
-    borderColor: 'rgba(0,100,255,0.25)',
-  },
-});
 
 export default App;

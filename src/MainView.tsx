@@ -5,7 +5,6 @@ import {
     Easing,
     Modal,
     Pressable,
-    StyleSheet,
     Text,
     View,
 } from 'react-native';
@@ -41,16 +40,16 @@ const T = {
 };
 
 const TILE_COLORS: Record<number, { bg: string; text: string; border: string }> = {
-    0:    { bg: T.emptyCell, text: 'transparent', border: T.emptyCellBorder },
-    2:    { bg: 'rgba(0,229,255,0.10)', text: '#00e5ff', border: 'rgba(0,229,255,0.45)' },
-    4:    { bg: 'rgba(57,255,20,0.10)', text: '#39ff14', border: 'rgba(57,255,20,0.45)' },
-    8:    { bg: 'rgba(255,171,0,0.10)', text: '#ffab00', border: 'rgba(255,171,0,0.45)' },
-    16:   { bg: 'rgba(224,64,251,0.10)', text: '#e040fb', border: 'rgba(224,64,251,0.45)' },
-    32:   { bg: 'rgba(24,255,255,0.10)', text: '#18ffff', border: 'rgba(24,255,255,0.45)' },
-    64:   { bg: 'rgba(118,255,3,0.10)', text: '#76ff03', border: 'rgba(118,255,3,0.45)' },
-    128:  { bg: 'rgba(255,215,64,0.12)', text: '#ffd740', border: 'rgba(255,215,64,0.50)' },
-    256:  { bg: 'rgba(255,64,129,0.12)', text: '#ff4081', border: 'rgba(255,64,129,0.50)' },
-    512:  { bg: 'rgba(105,240,174,0.10)', text: '#69f0ae', border: 'rgba(105,240,174,0.45)' },
+    0: { bg: T.emptyCell, text: 'transparent', border: T.emptyCellBorder },
+    2: { bg: 'rgba(0,229,255,0.10)', text: '#00e5ff', border: 'rgba(0,229,255,0.45)' },
+    4: { bg: 'rgba(57,255,20,0.10)', text: '#39ff14', border: 'rgba(57,255,20,0.45)' },
+    8: { bg: 'rgba(255,171,0,0.10)', text: '#ffab00', border: 'rgba(255,171,0,0.45)' },
+    16: { bg: 'rgba(224,64,251,0.10)', text: '#e040fb', border: 'rgba(224,64,251,0.45)' },
+    32: { bg: 'rgba(24,255,255,0.10)', text: '#18ffff', border: 'rgba(24,255,255,0.45)' },
+    64: { bg: 'rgba(118,255,3,0.10)', text: '#76ff03', border: 'rgba(118,255,3,0.45)' },
+    128: { bg: 'rgba(255,215,64,0.12)', text: '#ffd740', border: 'rgba(255,215,64,0.50)' },
+    256: { bg: 'rgba(255,64,129,0.12)', text: '#ff4081', border: 'rgba(255,64,129,0.50)' },
+    512: { bg: 'rgba(105,240,174,0.10)', text: '#69f0ae', border: 'rgba(105,240,174,0.45)' },
     1024: { bg: 'rgba(176,190,197,0.08)', text: '#b0bec5', border: 'rgba(176,190,197,0.35)' },
     2048: { bg: 'rgba(255,23,68,0.15)', text: '#ff1744', border: 'rgba(255,23,68,0.55)' },
     4096: { bg: 'rgba(255,255,255,0.10)', text: '#ffffff', border: 'rgba(255,255,255,0.35)' },
@@ -80,9 +79,9 @@ const PRO_TIPS = [
 function Tile({
     value,
     isMerged,
-    isNew,
+    isNew: _isNew,
     mergeAnimationTick,
-    spawnAnimationTick,
+    spawnAnimationTick: _spawnAnimationTick,
 }: {
     value: number;
     isMerged: boolean;
@@ -114,9 +113,12 @@ function Tile({
 
     return (
         <Animated.View
+            className="items-center justify-center rounded-[10px]"
             style={[
-                styles.tile,
                 {
+                    width: TILE_SIZE,
+                    height: TILE_SIZE,
+                    margin: TILE_MARGIN,
                     backgroundColor: colors.bg,
                     borderColor: colors.border,
                     borderWidth: value > 0 ? 1.5 : 1,
@@ -125,8 +127,8 @@ function Tile({
             ]}>
             {value > 0 && (
                 <Text
+                    className="font-extrabold"
                     style={[
-                        styles.tileText,
                         { color: colors.text, fontSize: getTileFontSize(value) },
                     ]}
                     numberOfLines={1}
@@ -174,14 +176,22 @@ function HighScoreBanner({ visible }: { visible: boolean }) {
     if (!show) { return null; }
 
     return (
-        <View style={styles.highScoreOverlay} pointerEvents="none">
+        <View className="absolute inset-0 z-10 items-center justify-center" pointerEvents="none">
             <Animated.View
+                className="items-center rounded-[20px] border-2 border-[rgba(255,215,64,0.5)] bg-[rgba(255,215,64,0.18)] px-10 py-7"
                 style={[
-                    styles.highScoreBanner,
-                    { transform: [{ scale }], opacity },
+                    {
+                        transform: [{ scale }],
+                        opacity,
+                        elevation: 12,
+                        shadowColor: T.gold,
+                        shadowOffset: { width: 0, height: 0 },
+                        shadowOpacity: 0.4,
+                        shadowRadius: 20,
+                    },
                 ]}>
-                <Text style={styles.highScoreIcon}>🏆</Text>
-                <Text style={styles.highScoreTitle}>New High Score!</Text>
+                <Text className="mb-2 text-5xl">🏆</Text>
+                <Text className="text-[28px] font-extrabold text-[#ffd740]">New High Score!</Text>
             </Animated.View>
         </View>
     );
@@ -234,19 +244,19 @@ function ScoreBox({
     }, [scoreBumpTick, scoreAdded, bumpScale, addedOpacity, addedTranslateY]);
 
     return (
-        <View style={styles.scoreBox}>
-            <Text style={[styles.scoreLabel, { color: labelColor }]}>{label}</Text>
+        <View className="relative flex-1 items-start py-1">
+            <Text className="text-xs font-bold tracking-[2px]" style={{ color: labelColor }}>{label}</Text>
             <Animated.Text
+                className="mt-0 text-4xl font-extrabold text-white"
                 style={[
-                    styles.scoreValue,
                     { transform: [{ scale: bumpScale }] },
                 ]}>
                 {score}
             </Animated.Text>
             {showAdded && scoreAdded != null && scoreAdded > 0 && (
                 <Animated.Text
+                    className="absolute right-1 top-2 text-sm font-bold text-[#ff2d78]"
                     style={[
-                        styles.scoreAdded,
                         {
                             opacity: addedOpacity,
                             transform: [{ translateY: addedTranslateY }],
@@ -268,7 +278,7 @@ function GridIcon() {
         backgroundColor: T.white,
     };
     return (
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', width: 22, gap: 3 }}>
+        <View className="w-[22px] flex-row flex-wrap gap-[3px]">
             <View style={sq} />
             <View style={sq} />
             <View style={sq} />
@@ -283,19 +293,16 @@ function MiniTile({ value, size = 44 }: { value: number; size?: number }) {
     const fontSize = value >= 1000 ? size * 0.26 : value >= 100 ? size * 0.32 : size * 0.4;
     return (
         <View
+            className="m-0.5 items-center justify-center rounded-lg"
             style={{
                 width: size,
                 height: size,
-                borderRadius: 8,
                 backgroundColor: colors.bg,
                 borderWidth: value > 0 ? 1.5 : 1,
                 borderColor: colors.border,
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: 2,
             }}>
             {value > 0 && (
-                <Text style={{ color: colors.text, fontSize, fontWeight: '800' }}>
+                <Text className="font-extrabold" style={{ color: colors.text, fontSize }}>
                     {value}
                 </Text>
             )}
@@ -316,15 +323,15 @@ function MergeExample({
     scoreGain: number;
 }) {
     return (
-        <View style={{ alignItems: 'center', marginVertical: 6 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View className="my-1.5 items-center">
+            <View className="flex-row items-center">
                 <MiniTile value={from1} />
-                <Text style={{ fontSize: 18, fontWeight: '700', color: T.dim, marginHorizontal: 4 }}>+</Text>
+                <Text className="mx-1 text-lg font-bold text-[rgba(255,255,255,0.5)]">+</Text>
                 <MiniTile value={from2} />
-                <Text style={{ fontSize: 18, fontWeight: '700', color: T.dim, marginHorizontal: 4 }}>=</Text>
+                <Text className="mx-1 text-lg font-bold text-[rgba(255,255,255,0.5)]">=</Text>
                 <MiniTile value={result} />
             </View>
-            <Text style={{ fontSize: 12, fontWeight: '600', color: T.gold, marginTop: 4 }}>
+            <Text className="mt-1 text-xs font-semibold text-[#ffd740]">
                 +{scoreGain} points!
             </Text>
         </View>
@@ -355,12 +362,12 @@ function ProTipCard() {
     }, [fadeAnim]);
 
     return (
-        <View style={styles.proTipCard}>
-            <View style={styles.proTipHeader}>
-                <Text style={styles.proTipTitle}>Pro Tip</Text>
-                <View style={styles.proTipIndicator} />
+        <View className="mt-3.5 w-full max-w-[400px] rounded-[14px] border border-[rgba(255,255,255,0.10)] bg-[rgba(255,255,255,0.05)] p-4">
+            <View className="mb-2 flex-row items-center justify-between">
+                <Text className="text-[15px] font-extrabold italic text-[#ff2d78]">Pro Tip</Text>
+                <View className="h-4 w-4 rounded-full border-2 border-[rgba(255,255,255,0.15)]" />
             </View>
-            <Animated.Text style={[styles.proTipText, { opacity: fadeAnim }]}>
+            <Animated.Text className="text-[13px] leading-[19px] text-[rgba(255,255,255,0.7)]" style={{ opacity: fadeAnim }}>
                 {PRO_TIPS[tipIndex]}
             </Animated.Text>
         </View>
@@ -428,24 +435,24 @@ function TutorialOverlay({
             title: 'Swipe in any direction to move all tiles.',
             body: 'Tiles with the same number merge into one when they touch.',
             visual: (
-                <View style={tutStyles.boardPreview}>
-                    <View style={tutStyles.boardGrid}>
+                <View className="relative mb-6">
+                    <View className="rounded-xl bg-[rgba(15,20,45,0.9)] p-1.5">
                         {[
                             [0, 2, 0, 0],
                             [4, 0, 2, 0],
                             [0, 0, 0, 0],
                             [0, 4, 0, 0],
                         ].map((row, ri) => (
-                            <View key={ri} style={tutStyles.boardRow}>
+                            <View key={ri} className="flex-row">
                                 {row.map((v, ci) => (
                                     <MiniTile key={ci} value={v} size={52} />
                                 ))}
                             </View>
                         ))}
                     </View>
-                    <View style={tutStyles.handOverlay}>
-                        <Text style={{ fontSize: 40 }}>👋</Text>
-                        <View style={tutStyles.swipeLine} />
+                    <View className="absolute bottom-10 left-5 flex-row items-center">
+                        <Text className="text-[40px]">👋</Text>
+                        <View className="ml-1 h-[3px] w-20 rounded-sm bg-[#ff2d78]" />
                     </View>
                 </View>
             ),
@@ -454,7 +461,7 @@ function TutorialOverlay({
             title: 'Same numbers merge together!',
             body: 'Every merge adds the new tile\'s value to your score. Bigger merges = more points!',
             visual: (
-                <View style={{ marginTop: 8 }}>
+                <View className="mt-2">
                     <MergeExample from1={2} from2={2} result={4} scoreGain={4} />
                     <MergeExample from1={4} from2={4} result={8} scoreGain={8} />
                     <MergeExample from1={128} from2={128} result={256} scoreGain={256} />
@@ -465,7 +472,7 @@ function TutorialOverlay({
             title: 'Reach 2048 to win!',
             body: 'Build up to the 2048 tile. You can keep playing afterwards for an even higher score.',
             visual: (
-                <View style={{ flexDirection: 'row', gap: 4, marginTop: 12 }}>
+                <View className="mt-3 flex-row gap-1">
                     <MiniTile value={128} size={50} />
                     <MiniTile value={256} size={50} />
                     <MiniTile value={512} size={50} />
@@ -483,38 +490,37 @@ function TutorialOverlay({
 
     return (
         <Modal visible transparent animationType="none" statusBarTranslucent>
-            <Animated.View style={[tutStyles.backdrop, { opacity: backdropOpacity }]}>
+            <Animated.View
+                className="flex-1 bg-[rgba(8,12,24,0.96)] px-6 pb-8 pt-12"
+                style={{ opacity: backdropOpacity }}>
                 {/* Header */}
-                <View style={tutStyles.header}>
-                    <Text style={tutStyles.logo}>2048</Text>
+                <View className="mb-4 flex-row items-center justify-between">
+                    <Text className="text-4xl font-black text-[#39ff14]">2048</Text>
                     <Pressable onPress={onDismiss} hitSlop={16}>
-                        <Text style={tutStyles.skip}>SKIP</Text>
+                        <Text className="text-[15px] font-semibold tracking-[1px] text-white">SKIP</Text>
                     </Pressable>
                 </View>
 
                 {/* Step indicator */}
-                <View style={tutStyles.stepBar}>
+                <View className="mb-5 flex-row justify-center gap-1.5">
                     {slides.map((_, i) => (
                         <View
                             key={i}
-                            style={[
-                                tutStyles.stepDot,
-                                i === step && tutStyles.stepDotActive,
-                            ]}
+                            className={`h-1 w-7 rounded-sm ${i === step ? 'bg-[#ff2d78]' : 'bg-[rgba(255,255,255,0.15)]'}`}
                         />
                     ))}
                 </View>
 
                 {/* Content */}
                 <Animated.View
+                    className="flex-1 items-center justify-center"
                     style={[
-                        tutStyles.content,
                         { opacity: contentOpacity, transform: [{ translateY: contentSlide }] },
                     ]}>
                     {slide.visual}
 
-                    <Text style={tutStyles.title}>{slide.title}</Text>
-                    <Text style={tutStyles.body}>{slide.body}</Text>
+                    <Text className="mb-2.5 text-center text-2xl font-extrabold leading-8 text-white">{slide.title}</Text>
+                    <Text className="px-3 text-center text-sm leading-[21px] text-[rgba(255,255,255,0.5)]">{slide.body}</Text>
                 </Animated.View>
 
                 {/* Next / Let's Go button */}
@@ -523,11 +529,11 @@ function TutorialOverlay({
                         if (isLast) { onDismiss(); }
                         else { animateToNextStep(step + 1); }
                     }}
+                    className="mt-5 items-center rounded-[14px] bg-[#ff2d78] py-4"
                     style={({ pressed }) => [
-                        tutStyles.nextBtn,
                         pressed && { opacity: 0.85 },
                     ]}>
-                    <Text style={tutStyles.nextText}>
+                    <Text className="text-base font-extrabold tracking-[1.5px] text-white">
                         {isLast ? "LET'S GO!" : 'NEXT'}
                     </Text>
                 </Pressable>
@@ -565,20 +571,23 @@ const MainView = () => {
     const newTileCellSet = useMemo(() => new Set(newTileCells), [newTileCells]);
 
     return (
-        <View style={styles.container}>
+        <View className="flex-1 items-center justify-between bg-[#080c18] px-5 pb-3 pt-4">
             {/* Header */}
-            <View style={styles.header}>
-                <View style={styles.headerTopRow}>
-                    <View style={styles.headerIconBtn}>
+            <View className="mb-2 w-full max-w-[400px]">
+                <View className="mb-3 flex-row items-center justify-between">
+                    <View className="h-10 w-10 items-center justify-center rounded-[10px] border border-[rgba(255,255,255,0.10)] bg-[rgba(255,255,255,0.05)]">
                         <GridIcon />
                     </View>
-                    <Text style={styles.title}>2048</Text>
-                    <Pressable onPress={openTutorial} hitSlop={12} style={styles.profileIcon}>
-                        <Text style={{ color: T.cyan, fontSize: 18, fontWeight: '800' }}>?</Text>
+                    <Text className="text-5xl font-black tracking-[2px] text-[#00e5ff]">2048</Text>
+                    <Pressable
+                        onPress={openTutorial}
+                        hitSlop={12}
+                        className="h-9 w-9 items-center justify-center rounded-full border-2 border-[#00e5ff] bg-[rgba(0,229,255,0.08)]">
+                        <Text className="text-lg font-extrabold text-[#00e5ff]">?</Text>
                     </Pressable>
                 </View>
 
-                <View style={styles.scoresRow}>
+                <View className="flex-row justify-between">
                     <ScoreBox
                         label="SCORE"
                         score={score}
@@ -591,9 +600,11 @@ const MainView = () => {
 
             {/* Game Board */}
             <GestureDetector gesture={gesture}>
-                <View style={styles.board}>
+                <View
+                    className="rounded-[14px] border border-[rgba(255,255,255,0.06)] bg-[rgba(15,20,45,0.9)]"
+                    style={{ width: BOARD_WIDTH, padding: BOARD_PADDING }}>
                     {board.map((row, rowIndex) => (
-                        <View key={rowIndex} style={styles.row}>
+                        <View key={rowIndex} className="flex-row justify-center">
                             {row.map((cell, colIndex) => {
                                 const key = `${rowIndex}-${colIndex}`;
                                 return (
@@ -613,30 +624,34 @@ const MainView = () => {
             </GestureDetector>
 
             {/* Action Buttons */}
-            <View style={styles.buttonsRow}>
+            <View className="mt-4 flex-row items-center gap-3.5">
                 <Pressable
                     onPress={undoMove}
                     disabled={!canUndo}
+                    className="h-[50px] w-[50px] items-center justify-center rounded-full border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.07)]"
                     style={({ pressed }) => [
-                        styles.undoButton,
-                        pressed && styles.buttonPressed,
-                        !canUndo && styles.buttonDisabled,
+                        pressed && { opacity: 0.7 },
+                        !canUndo && { opacity: 0.35 },
                     ]}
                     accessibilityLabel="Undo"
                     accessibilityRole="button">
-                    <Text style={[styles.undoIcon, !canUndo && styles.iconDisabled]}>↩</Text>
+                    <Text
+                        className="text-[22px] font-bold"
+                        style={{ color: canUndo ? T.white : 'rgba(255,255,255,0.3)' }}>
+                        ↩
+                    </Text>
                 </Pressable>
 
                 <Pressable
                     onPress={retryGame}
+                    className="flex-row items-center gap-2 rounded-full border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.07)] px-6 py-3"
                     style={({ pressed }) => [
-                        styles.newGameButton,
-                        pressed && styles.buttonPressed,
+                        pressed && { opacity: 0.7 },
                     ]}
                     accessibilityLabel="New Game"
                     accessibilityRole="button">
-                    <Text style={styles.newGameIcon}>↻</Text>
-                    <Text style={styles.newGameText}>New Game</Text>
+                    <Text className="text-lg font-bold text-[#00e5ff]">↻</Text>
+                    <Text className="text-[15px] font-bold text-white">New Game</Text>
                 </Pressable>
             </View>
 
@@ -653,24 +668,32 @@ const MainView = () => {
                 transparent
                 statusBarTranslucent
                 onRequestClose={keepPlaying}>
-                <View style={styles.modalBackdrop}>
-                    <View style={styles.modalCard}>
-                        <Text style={styles.modalEmoji}>🎉</Text>
-                        <Text style={styles.modalTitle}>You Win!</Text>
-                        <Text style={styles.modalSubtitle}>
+                <View className="flex-1 items-center justify-center bg-[rgba(8,12,24,0.88)] px-6">
+                    <View
+                        className="w-full max-w-[320px] items-center rounded-[20px] border border-[rgba(255,255,255,0.10)] bg-[rgba(20,25,50,0.95)] px-7 py-8"
+                        style={{
+                            elevation: 12,
+                            shadowColor: T.cyan,
+                            shadowOffset: { width: 0, height: 0 },
+                            shadowOpacity: 0.2,
+                            shadowRadius: 20,
+                        }}>
+                        <Text className="mb-2.5 text-[52px]">🎉</Text>
+                        <Text className="mb-1.5 text-3xl font-extrabold text-white">You Win!</Text>
+                        <Text className="mb-1 text-[15px] text-[rgba(255,255,255,0.5)]">
                             You reached the 2048 tile!
                         </Text>
-                        <Text style={styles.modalScore}>Score: {score}</Text>
-                        <View style={styles.modalButtonRow}>
+                        <Text className="mb-1 text-xl font-bold text-[#00e5ff]">Score: {score}</Text>
+                        <View className="mt-4 flex-row gap-3">
                             <Pressable
-                                style={styles.modalBtnSecondary}
+                                className="items-center rounded-xl border-[1.5px] border-[rgba(255,255,255,0.14)] px-5 py-3"
                                 onPress={keepPlaying}>
-                                <Text style={styles.modalBtnSecondaryText}>Keep Playing</Text>
+                                <Text className="text-[15px] font-bold text-white">Keep Playing</Text>
                             </Pressable>
                             <Pressable
-                                style={styles.modalBtnPrimary}
+                                className="mt-3 min-w-[120px] items-center rounded-xl bg-[#ff2d78] px-5 py-3"
                                 onPress={retryGame}>
-                                <Text style={styles.modalBtnPrimaryText}>New Game</Text>
+                                <Text className="text-[15px] font-bold text-white">New Game</Text>
                             </Pressable>
                         </View>
                     </View>
@@ -684,20 +707,28 @@ const MainView = () => {
                 transparent
                 statusBarTranslucent
                 onRequestClose={() => { }}>
-                <View style={styles.modalBackdrop}>
-                    <View style={styles.modalCard}>
-                        <Text style={styles.modalEmoji}>😔</Text>
-                        <Text style={styles.modalTitle}>Game Over</Text>
-                        <Text style={styles.modalScore}>Score: {score}</Text>
+                <View className="flex-1 items-center justify-center bg-[rgba(8,12,24,0.88)] px-6">
+                    <View
+                        className="w-full max-w-[320px] items-center rounded-[20px] border border-[rgba(255,255,255,0.10)] bg-[rgba(20,25,50,0.95)] px-7 py-8"
+                        style={{
+                            elevation: 12,
+                            shadowColor: T.cyan,
+                            shadowOffset: { width: 0, height: 0 },
+                            shadowOpacity: 0.2,
+                            shadowRadius: 20,
+                        }}>
+                        <Text className="mb-2.5 text-[52px]">😔</Text>
+                        <Text className="mb-1.5 text-3xl font-extrabold text-white">Game Over</Text>
+                        <Text className="mb-1 text-xl font-bold text-[#00e5ff]">Score: {score}</Text>
                         {score === bestScore && score > 0 && (
-                            <Text style={styles.modalBestLabel}>
+                            <Text className="mb-2 text-sm font-semibold text-[#ffd740]">
                                 That's your best score!
                             </Text>
                         )}
                         <Pressable
-                            style={styles.modalBtnPrimary}
+                            className="mt-3 min-w-[120px] items-center rounded-xl bg-[#ff2d78] px-5 py-3"
                             onPress={retryGame}>
-                            <Text style={styles.modalBtnPrimaryText}>Try Again</Text>
+                            <Text className="text-[15px] font-bold text-white">Try Again</Text>
                         </Pressable>
                     </View>
                 </View>
@@ -713,417 +744,5 @@ const MainView = () => {
 };
 
 /* ═══ Tutorial Styles ═══ */
-const tutStyles = StyleSheet.create({
-    backdrop: {
-        flex: 1,
-        backgroundColor: 'rgba(8,12,24,0.96)',
-        paddingHorizontal: 24,
-        paddingTop: 48,
-        paddingBottom: 32,
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 16,
-    },
-    logo: {
-        fontSize: 36,
-        fontWeight: '900',
-        color: T.green,
-    },
-    skip: {
-        fontSize: 15,
-        fontWeight: '600',
-        color: T.white,
-        letterSpacing: 1,
-    },
-    stepBar: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        gap: 6,
-        marginBottom: 20,
-    },
-    stepDot: {
-        width: 28,
-        height: 4,
-        borderRadius: 2,
-        backgroundColor: 'rgba(255,255,255,0.15)',
-    },
-    stepDotActive: {
-        backgroundColor: T.pink,
-    },
-    content: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    boardPreview: {
-        position: 'relative',
-        marginBottom: 24,
-    },
-    boardGrid: {
-        backgroundColor: T.boardBg,
-        borderRadius: 12,
-        padding: 6,
-    },
-    boardRow: {
-        flexDirection: 'row',
-    },
-    handOverlay: {
-        position: 'absolute',
-        bottom: 40,
-        left: 20,
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    swipeLine: {
-        width: 80,
-        height: 3,
-        borderRadius: 2,
-        backgroundColor: T.pink,
-        marginLeft: 4,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: '800',
-        color: T.white,
-        textAlign: 'center',
-        marginBottom: 10,
-        lineHeight: 32,
-    },
-    body: {
-        fontSize: 14,
-        color: T.dim,
-        textAlign: 'center',
-        lineHeight: 21,
-        paddingHorizontal: 12,
-    },
-    nextBtn: {
-        backgroundColor: T.pink,
-        borderRadius: 14,
-        paddingVertical: 16,
-        alignItems: 'center',
-        marginTop: 20,
-    },
-    nextText: {
-        fontSize: 16,
-        fontWeight: '800',
-        color: T.white,
-        letterSpacing: 1.5,
-    },
-});
-
 /* ═══ Main Styles ═══ */
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: T.bg,
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingTop: 16,
-        justifyContent: 'space-between',
-        paddingBottom: 12,
-    },
-
-    /* Header */
-    header: {
-        width: '100%',
-        maxWidth: 400,
-        marginBottom: 8,
-    },
-    headerTopRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 12,
-    },
-    headerIconBtn: {
-        width: 40,
-        height: 40,
-        borderRadius: 10,
-        backgroundColor: T.cardBg,
-        borderWidth: 1,
-        borderColor: T.cardBorder,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    title: {
-        fontSize: 48,
-        fontWeight: '900',
-        color: T.cyan,
-        letterSpacing: 2,
-    },
-    profileIcon: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        borderWidth: 2,
-        borderColor: T.cyan,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'rgba(0,229,255,0.08)',
-    },
-
-    /* Scores */
-    scoresRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
-    scoreBox: {
-        flex: 1,
-        alignItems: 'flex-start',
-        position: 'relative',
-        paddingVertical: 4,
-    },
-    scoreLabel: {
-        fontSize: 12,
-        fontWeight: '700',
-        letterSpacing: 2,
-    },
-    scoreValue: {
-        fontSize: 36,
-        fontWeight: '800',
-        color: T.white,
-        marginTop: 0,
-    },
-    scoreAdded: {
-        position: 'absolute',
-        right: 4,
-        top: 8,
-        fontSize: 14,
-        fontWeight: '700',
-        color: T.pink,
-    },
-
-    /* Board */
-    board: {
-        width: BOARD_WIDTH,
-        backgroundColor: T.boardBg,
-        borderRadius: 14,
-        padding: BOARD_PADDING,
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.06)',
-    },
-    row: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-    },
-    tile: {
-        width: TILE_SIZE,
-        height: TILE_SIZE,
-        margin: TILE_MARGIN,
-        borderRadius: 10,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    tileText: {
-        fontWeight: '800',
-    },
-
-    /* Buttons */
-    buttonsRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 14,
-        marginTop: 16,
-    },
-    undoButton: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: T.btnBg,
-        borderWidth: 1,
-        borderColor: T.btnBorder,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    undoIcon: {
-        fontSize: 22,
-        fontWeight: '700',
-        color: T.white,
-    },
-    newGameButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        backgroundColor: T.btnBg,
-        borderWidth: 1,
-        borderColor: T.btnBorder,
-        borderRadius: 25,
-        paddingVertical: 12,
-        paddingHorizontal: 24,
-    },
-    newGameIcon: {
-        fontSize: 18,
-        fontWeight: '700',
-        color: T.cyan,
-    },
-    newGameText: {
-        fontSize: 15,
-        fontWeight: '700',
-        color: T.white,
-    },
-    buttonPressed: {
-        opacity: 0.7,
-    },
-    buttonDisabled: {
-        opacity: 0.35,
-    },
-    iconDisabled: {
-        color: 'rgba(255,255,255,0.3)',
-    },
-
-    /* Pro Tip Card */
-    proTipCard: {
-        width: '100%',
-        maxWidth: 400,
-        backgroundColor: T.cardBg,
-        borderWidth: 1,
-        borderColor: T.cardBorder,
-        borderRadius: 14,
-        padding: 16,
-        marginTop: 14,
-    },
-    proTipHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    proTipTitle: {
-        fontSize: 15,
-        fontWeight: '800',
-        color: T.pink,
-        fontStyle: 'italic',
-    },
-    proTipIndicator: {
-        width: 16,
-        height: 16,
-        borderRadius: 8,
-        borderWidth: 2,
-        borderColor: 'rgba(255,255,255,0.15)',
-    },
-    proTipText: {
-        fontSize: 13,
-        color: 'rgba(255,255,255,0.7)',
-        lineHeight: 19,
-    },
-
-    /* High Score Banner */
-    highScoreOverlay: {
-        ...StyleSheet.absoluteFillObject,
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 10,
-    },
-    highScoreBanner: {
-        backgroundColor: 'rgba(255,215,64,0.18)',
-        borderWidth: 2,
-        borderColor: 'rgba(255,215,64,0.5)',
-        borderRadius: 20,
-        paddingVertical: 28,
-        paddingHorizontal: 40,
-        alignItems: 'center',
-        elevation: 12,
-        shadowColor: T.gold,
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.4,
-        shadowRadius: 20,
-    },
-    highScoreIcon: {
-        fontSize: 48,
-        marginBottom: 8,
-    },
-    highScoreTitle: {
-        fontSize: 28,
-        fontWeight: '800',
-        color: T.gold,
-    },
-
-    /* Modals */
-    modalBackdrop: {
-        flex: 1,
-        backgroundColor: 'rgba(8,12,24,0.88)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingHorizontal: 24,
-    },
-    modalCard: {
-        width: '100%',
-        maxWidth: 320,
-        backgroundColor: 'rgba(20,25,50,0.95)',
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.10)',
-        borderRadius: 20,
-        paddingVertical: 32,
-        paddingHorizontal: 28,
-        alignItems: 'center',
-        elevation: 12,
-        shadowColor: T.cyan,
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.2,
-        shadowRadius: 20,
-    },
-    modalEmoji: {
-        fontSize: 52,
-        marginBottom: 10,
-    },
-    modalTitle: {
-        fontSize: 30,
-        fontWeight: '800',
-        color: T.white,
-        marginBottom: 6,
-    },
-    modalSubtitle: {
-        fontSize: 15,
-        color: T.dim,
-        marginBottom: 4,
-    },
-    modalScore: {
-        fontSize: 20,
-        fontWeight: '700',
-        color: T.cyan,
-        marginBottom: 4,
-    },
-    modalBestLabel: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: T.gold,
-        marginBottom: 8,
-    },
-    modalButtonRow: {
-        flexDirection: 'row',
-        gap: 12,
-        marginTop: 16,
-    },
-    modalBtnSecondary: {
-        borderRadius: 12,
-        borderWidth: 1.5,
-        borderColor: T.btnBorder,
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-        alignItems: 'center',
-    },
-    modalBtnSecondaryText: {
-        color: T.white,
-        fontSize: 15,
-        fontWeight: '700',
-    },
-    modalBtnPrimary: {
-        backgroundColor: T.pink,
-        borderRadius: 12,
-        minWidth: 120,
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-        alignItems: 'center',
-        marginTop: 12,
-    },
-    modalBtnPrimaryText: {
-        color: T.white,
-        fontSize: 15,
-        fontWeight: '700',
-    },
-});
-
 export default MainView;

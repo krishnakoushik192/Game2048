@@ -391,19 +391,35 @@ export const useMainViewModel = () => {
     }, []);
 
     const flingRight = useMemo(
-        () => Gesture.Fling().direction(Directions.RIGHT).onEnd(() => applyMove('right')),
+        () =>
+            Gesture.Fling()
+                .runOnJS(true)
+                .direction(Directions.RIGHT)
+                .onEnd(() => applyMove('right')),
         [applyMove],
     );
     const flingLeft = useMemo(
-        () => Gesture.Fling().direction(Directions.LEFT).onEnd(() => applyMove('left')),
+        () =>
+            Gesture.Fling()
+                .runOnJS(true)
+                .direction(Directions.LEFT)
+                .onEnd(() => applyMove('left')),
         [applyMove],
     );
     const flingUp = useMemo(
-        () => Gesture.Fling().direction(Directions.UP).onEnd(() => applyMove('up')),
+        () =>
+            Gesture.Fling()
+                .runOnJS(true)
+                .direction(Directions.UP)
+                .onEnd(() => applyMove('up')),
         [applyMove],
     );
     const flingDown = useMemo(
-        () => Gesture.Fling().direction(Directions.DOWN).onEnd(() => applyMove('down')),
+        () =>
+            Gesture.Fling()
+                .runOnJS(true)
+                .direction(Directions.DOWN)
+                .onEnd(() => applyMove('down')),
         [applyMove],
     );
 
