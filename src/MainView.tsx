@@ -8,8 +8,14 @@ import {
     Text,
     View,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import { useMainViewModel } from './MianViewModel';
+import type { PowerMode, PowerPurchaseKind } from './MianViewModel';
+import Footer from './components/Footer';
+import PowerButton from './components/PowerButton';
+import { FontAwesome6 } from '@react-native-vector-icons/fontawesome6/static';
+import { Lucide } from '@react-native-vector-icons/lucide/static';
 
 const GRID_SIZE = 4;
 const BOARD_PADDING = 10;
@@ -19,7 +25,7 @@ const BOARD_WIDTH = Math.min(SCREEN_WIDTH - 40, 380);
 const TILE_SIZE =
     (BOARD_WIDTH - BOARD_PADDING * 2 - TILE_MARGIN * 2 * GRID_SIZE) / GRID_SIZE;
 
-const T = {
+export const COLORS = {
     bg: '#080c18',
     boardBg: 'rgba(15,20,45,0.9)',
     emptyCell: 'rgba(255,255,255,0.04)',
@@ -40,7 +46,7 @@ const T = {
 };
 
 const TILE_COLORS: Record<number, { bg: string; text: string; border: string }> = {
-    0: { bg: T.emptyCell, text: 'transparent', border: T.emptyCellBorder },
+    0: { bg: COLORS.emptyCell, text: 'transparent', border: COLORS.emptyCellBorder },
     2: { bg: 'rgba(0,229,255,0.10)', text: '#00e5ff', border: 'rgba(0,229,255,0.45)' },
     4: { bg: 'rgba(57,255,20,0.10)', text: '#39ff14', border: 'rgba(57,255,20,0.45)' },
     8: { bg: 'rgba(255,171,0,0.10)', text: '#ffab00', border: 'rgba(255,171,0,0.45)' },
@@ -80,17 +86,30 @@ function Tile({
     value,
     isMerged,
     isNew: _isNew,
+    isSelectable,
+    isPowerAction,
+    activePowerMode,
+    powerAnimationTick,
     mergeAnimationTick,
     spawnAnimationTick: _spawnAnimationTick,
+    onPress,
 }: {
     value: number;
     isMerged: boolean;
     isNew: boolean;
+    isSelectable: boolean;
+    isPowerAction: boolean;
+    activePowerMode: PowerMode;
+    powerAnimationTick: number;
     mergeAnimationTick: number;
     spawnAnimationTick: number;
+    onPress: () => void;
 }) {
     const colors = getTileStyle(value);
     const scale = useRef(new Animated.Value(1)).current;
+    const powerScale = useRef(new Animated.Value(1)).current;
+    const powerOpacity = useRef(new Animated.Value(1)).current;
+    const shake = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
         if (!isMerged || value === 0) { return; }
@@ -111,7 +130,43 @@ function Tile({
         ]).start();
     }, [isMerged, mergeAnimationTick, scale, value]);
 
-    return (
+    useEffect(() => {
+        if (!isPowerAction || value === 0) { return; }
+        powerScale.setValue(1);
+        powerOpacity.setValue(1);
+        shake.setValue(0);
+        const shakeAnimation = Animated.sequence([
+            Animated.timing(shake, { toValue: -4, duration: 35, useNativeDriver: true }),
+            Animated.timing(shake, { toValue: 4, duration: 35, useNativeDriver: true }),
+            Animated.timing(shake, { toValue: -3, duration: 35, useNativeDriver: true }),
+            Animated.timing(shake, { toValue: 3, duration: 35, useNativeDriver: true }),
+            Animated.timing(shake, { toValue: 0, duration: 35, useNativeDriver: true }),
+        ]);
+        const blastAnimation = Animated.sequence([
+            Animated.timing(powerScale, {
+                toValue: activePowerMode === 'blast' ? 1.16 : 1.08,
+                duration: 100,
+                easing: Easing.out(Easing.quad),
+                useNativeDriver: true,
+            }),
+            Animated.parallel([
+                Animated.timing(powerScale, {
+                    toValue: 0,
+                    duration: activePowerMode === 'blast' ? 220 : 160,
+                    easing: Easing.in(Easing.quad),
+                    useNativeDriver: true,
+                }),
+                Animated.timing(powerOpacity, {
+                    toValue: 0,
+                    duration: activePowerMode === 'blast' ? 220 : 160,
+                    useNativeDriver: true,
+                }),
+            ]),
+        ]);
+        Animated.parallel([shakeAnimation, blastAnimation]).start();
+    }, [activePowerMode, isPowerAction, powerAnimationTick, powerOpacity, powerScale, shake, value]);
+
+    const tile = (
         <Animated.View
             className="items-center justify-center rounded-[10px]"
             style={[
@@ -120,11 +175,42 @@ function Tile({
                     height: TILE_SIZE,
                     margin: TILE_MARGIN,
                     backgroundColor: colors.bg,
-                    borderColor: colors.border,
-                    borderWidth: value > 0 ? 1.5 : 1,
-                    transform: [{ scale: isMerged && value > 0 ? scale : 1 }],
+                    borderColor: isSelectable ? (activePowerMode === 'destroy' ? COLORS.pink : COLORS.cyan) : colors.border,
+                    borderWidth: isSelectable ? 2 : value > 0 ? 1.5 : 1,
+                    opacity: isPowerAction ? powerOpacity : 1,
+                    shadowColor: activePowerMode === 'destroy' ? COLORS.pink : COLORS.cyan,
+                    shadowOffset: { width: 0, height: 0 },
+                    shadowOpacity: isSelectable ? 0.55 : 0,
+                    shadowRadius: isSelectable ? 12 : 0,
+                    elevation: isSelectable ? 8 : 0,
+                    transform: [
+                        { translateX: isPowerAction ? shake : 0 },
+                        { scale: isPowerAction ? powerScale : isMerged && value > 0 ? scale : 1 },
+                    ],
                 },
             ]}>
+            {isSelectable && (
+                <View
+                    className="absolute inset-0 rounded-[10px]"
+                    style={{
+                        backgroundColor: activePowerMode === 'destroy'
+                            ? 'rgba(255,45,120,0.12)'
+                            : 'rgba(0,229,255,0.12)',
+                    }}
+                />
+            )}
+            {isPowerAction && (
+                <Animated.View
+                    className="absolute rounded-full border-2"
+                    style={{
+                        width: TILE_SIZE * 0.94,
+                        height: TILE_SIZE * 0.94,
+                        borderColor: activePowerMode === 'destroy' ? COLORS.pink : COLORS.gold,
+                        opacity: powerOpacity,
+                        transform: [{ scale: powerScale }],
+                    }}
+                />
+            )}
             {value > 0 && (
                 <Text
                     className="font-extrabold"
@@ -137,6 +223,20 @@ function Tile({
                 </Text>
             )}
         </Animated.View>
+    );
+
+    if (!activePowerMode) {
+        return tile;
+    }
+
+    return (
+        <Pressable
+            onPress={onPress}
+            disabled={value <= 0}
+            accessibilityLabel={value > 0 ? `Select ${value} tile` : 'Empty tile'}
+            accessibilityRole="button">
+            {tile}
+        </Pressable>
     );
 }
 
@@ -184,7 +284,7 @@ function HighScoreBanner({ visible }: { visible: boolean }) {
                         transform: [{ scale }],
                         opacity,
                         elevation: 12,
-                        shadowColor: T.gold,
+                        shadowColor: COLORS.gold,
                         shadowOffset: { width: 0, height: 0 },
                         shadowOpacity: 0.4,
                         shadowRadius: 20,
@@ -213,7 +313,7 @@ function ScoreBox({
     const addedOpacity = useRef(new Animated.Value(0)).current;
     const addedTranslateY = useRef(new Animated.Value(0)).current;
     const [showAdded, setShowAdded] = useState(false);
-    const labelColor = label === 'SCORE' ? T.pink : T.cyan;
+    const labelColor = label === 'SCORE' ? COLORS.pink : COLORS.cyan;
 
     useEffect(() => {
         if (!scoreBumpTick || !scoreAdded || scoreAdded <= 0) { return; }
@@ -244,8 +344,8 @@ function ScoreBox({
     }, [scoreBumpTick, scoreAdded, bumpScale, addedOpacity, addedTranslateY]);
 
     return (
-        <View className="relative flex-1 items-start py-1">
-            <Text className="text-xs font-bold tracking-[2px]" style={{ color: labelColor }}>{label}</Text>
+        <View className="relative flex-1 items-center py-1 mt-12">
+            <Text className="text-sm font-bold tracking-[2px]" style={{ color: labelColor }}>{label}</Text>
             <Animated.Text
                 className="mt-0 text-4xl font-extrabold text-white"
                 style={[
@@ -255,7 +355,7 @@ function ScoreBox({
             </Animated.Text>
             {showAdded && scoreAdded != null && scoreAdded > 0 && (
                 <Animated.Text
-                    className="absolute right-1 top-2 text-sm font-bold text-[#ff2d78]"
+                    className="absolute right-8 top-2 text-lg font-bold text-[#ff2d78]"
                     style={[
                         {
                             opacity: addedOpacity,
@@ -269,13 +369,225 @@ function ScoreBox({
     );
 }
 
-/* ─── Grid Icon (top-left header) ─── */
+function CoinCounter({
+    coins,
+    coinsAdded,
+    coinsBumpTick,
+}: {
+    coins: number;
+    coinsAdded: number;
+    coinsBumpTick: number;
+}) {
+    const scale = useRef(new Animated.Value(1)).current;
+    const addedOpacity = useRef(new Animated.Value(0)).current;
+    const addedTranslateY = useRef(new Animated.Value(0)).current;
+    const [showAdded, setShowAdded] = useState(false);
+
+    useEffect(() => {
+        if (!coinsBumpTick || coinsAdded <= 0) { return; }
+        scale.setValue(1.16);
+        Animated.timing(scale, {
+            toValue: 1,
+            duration: 260,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: true,
+        }).start();
+        setShowAdded(true);
+        addedOpacity.setValue(1);
+        addedTranslateY.setValue(0);
+        Animated.parallel([
+            Animated.timing(addedOpacity, { toValue: 0, duration: 800, useNativeDriver: true }),
+            Animated.timing(addedTranslateY, {
+                toValue: -24,
+                duration: 800,
+                easing: Easing.out(Easing.quad),
+                useNativeDriver: true,
+            }),
+        ]).start(() => setShowAdded(false));
+    }, [addedOpacity, addedTranslateY, coinsAdded, coinsBumpTick, scale]);
+
+    return (
+        <View
+            className="relative self-center rounded-full border px-4 py-2"
+            style={{
+                backgroundColor: 'rgba(255,215,64,0.08)',
+                borderColor: 'rgba(255,215,64,0.42)',
+                shadowColor: COLORS.gold,
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: 0.25,
+                shadowRadius: 12,
+                elevation: 6,
+            }}>
+            <Animated.View
+                className="flex-row items-center gap-2"
+                style={{ transform: [{ scale }] }}>
+                <FontAwesome6 name="coins" iconStyle="solid" size={18} color={COLORS.gold} />
+                <Text className="text-[16px] font-extrabold text-[#ffd740]">{coins}</Text>
+            </Animated.View>
+            {showAdded && (
+                <Animated.Text
+                    className="absolute right-2 top-0 text-xs font-extrabold text-[#39ff14]"
+                    style={{ opacity: addedOpacity, transform: [{ translateY: addedTranslateY }] }}>
+                    +{coinsAdded}
+                </Animated.Text>
+            )}
+        </View>
+    );
+}
+
+
+function PowerPurchaseModal({
+    pendingPower,
+    destroyCost,
+    blastCost,
+    onBuyDestroy,
+    onBuyBlast,
+    onCancel,
+}: {
+    pendingPower: PowerPurchaseKind | null;
+    destroyCost: number;
+    blastCost: number;
+    onBuyDestroy: () => void;
+    onBuyBlast: () => void;
+    onCancel: () => void;
+}) {
+    const isShop = pendingPower === 'shop';
+    const isDestroy = pendingPower === 'destroy';
+    const title = isDestroy ? 'Destroy Tile' : 'Number Blast';
+    const cost = isDestroy ? destroyCost : blastCost;
+    const color = isDestroy ? COLORS.magenta : COLORS.cyan;
+    const shopItems = [
+        { title: 'Destroy', icon: 'hammer', cost: destroyCost, color: COLORS.magenta, onPress: onBuyDestroy },
+        { title: 'Blast', icon: 'wand-sparkles', cost: blastCost, color: COLORS.cyan, onPress: onBuyBlast },
+    ] as const;
+
+    return (
+        <Modal
+            visible={pendingPower != null}
+            animationType="fade"
+            transparent
+            statusBarTranslucent
+            onRequestClose={onCancel}>
+            <View className="flex-1 items-center justify-center bg-[rgba(8,12,24,0.88)] px-6">
+                <View
+                    className="w-full max-w-[340px] items-center rounded-[20px] border border-[rgba(255,255,255,0.10)] bg-[rgba(20,25,50,0.95)] px-7 py-8"
+                    style={{
+                        elevation: 12,
+                        shadowColor: isShop ? COLORS.cyan : color,
+                        shadowOffset: { width: 0, height: 0 },
+                        shadowOpacity: 0.25,
+                        shadowRadius: 20,
+                    }}>
+                    {isShop ? (
+                        <>
+                            <Text className="mb-5 text-3xl font-extrabold text-white">Power Shop</Text>
+                            <View className="w-full flex-row justify-center" style={{ columnGap: 56 }}>
+                                {shopItems.map(item => (
+                                    <Pressable
+                                        key={item.title}
+                                        className="items-center justify-center rounded-full"
+                                        style={({ pressed }) => [
+                                            pressed && { opacity: 0.72 },
+                                        ]}
+                                        onPress={item.onPress}>
+                                        <View
+                                            className="rounded-full"
+                                            style={{
+                                                borderWidth: 1,
+                                                backgroundColor: `${item.color}24`,
+                                                borderColor: item.color,
+                                                paddingVertical: 15,
+                                                paddingHorizontal: 15,
+                                            }}>
+                                            <Lucide name={item.icon} size={24} color={item.color} />
+                                        </View>
+                                        <Text className="mt-2 text-center text-[14px] font-extrabold text-white">{item.title}</Text>
+                                        <Text className="mt-2 text-[13px] font-extrabold text-[#ffd740]">{item.cost} coins</Text>
+                                    </Pressable>
+                                ))}
+                            </View>
+                            <Pressable
+                                className="mt-5 min-w-[120px] items-center rounded-xl border-[1.5px] border-[rgba(255,255,255,0.14)] px-5 py-3"
+                                onPress={onCancel}>
+                                <Text className="text-[15px] font-bold text-white">Cancel</Text>
+                            </Pressable>
+                        </>
+                    ) : (
+                        <>
+                            <View
+                                className="mb-3 rounded-full"
+                                style={{
+                                    borderWidth: 1,
+                                    backgroundColor: `${color}24`,
+                                    borderColor: color,
+                                    paddingVertical: 15,
+                                    paddingHorizontal: 15,
+                                }}>
+                                <Lucide name={isDestroy ? 'hammer' : 'wand-sparkles'} size={24} color={color} />
+                            </View>
+                            <Text className="mb-1.5 text-3xl font-extrabold text-white">Recharge Power?</Text>
+                            <Text className="mb-2 text-[16px] font-bold" style={{ color }}>{title}</Text>
+                            <Text className="mb-5 text-xl font-extrabold text-[#ffd740]">Cost: {cost} coins</Text>
+                            <View className="flex-row gap-3">
+                                <Pressable
+                                    className="min-w-[104px] items-center rounded-xl px-5 py-3"
+                                    style={{ backgroundColor: color }}
+                                    onPress={isDestroy ? onBuyDestroy : onBuyBlast}>
+                                    <Text className="text-[15px] font-bold text-white">Buy</Text>
+                                </Pressable>
+                                <Pressable
+                                    className="min-w-[104px] items-center rounded-xl border-[1.5px] border-[rgba(255,255,255,0.14)] px-5 py-3"
+                                    onPress={onCancel}>
+                                    <Text className="text-[15px] font-bold text-white">Cancel</Text>
+                                </Pressable>
+                            </View>
+                        </>
+                    )}
+                </View>
+            </View>
+        </Modal>
+    );
+}
+
+function InfoModal({
+    visible,
+    onClose,
+}: {
+    visible: boolean;
+    onClose: () => void;
+}) {
+    return (
+        <Modal
+            visible={visible}
+            animationType="fade"
+            transparent
+            statusBarTranslucent
+            onRequestClose={onClose}>
+            <View className="flex-1 items-center justify-center bg-[rgba(8,12,24,0.88)] px-6">
+                <View className="w-full max-w-[320px] items-center rounded-[20px] border border-[rgba(255,255,255,0.10)] bg-[rgba(20,25,50,0.95)] px-7 py-8">
+                    <FontAwesome6 name="coins" iconStyle="solid" size={42} color={COLORS.gold} style={{ marginBottom: 8 }} />
+                    <Text className="mb-2 text-3xl font-extrabold text-white">Not Enough Coins</Text>
+                    <Text className="mb-5 text-center text-[15px] leading-5 text-[rgba(255,255,255,0.58)]">
+                        Merge bigger tiles to earn coins.
+                    </Text>
+                    <Pressable
+                        className="min-w-[120px] items-center rounded-xl bg-[#ff2d78] px-5 py-3"
+                        onPress={onClose}>
+                        <Text className="text-[15px] font-bold text-white">OK</Text>
+                    </Pressable>
+                </View>
+            </View>
+        </Modal>
+    );
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function GridIcon() {
     const sq = {
         width: 9,
         height: 9,
         borderRadius: 2,
-        backgroundColor: T.white,
+        backgroundColor: COLORS.white,
     };
     return (
         <View className="w-[22px] flex-row flex-wrap gap-[3px]">
@@ -375,7 +687,7 @@ function ProTipCard() {
 }
 
 /* ─── Tutorial / Onboarding Overlay ─── */
-function TutorialOverlay({
+export function TutorialOverlay({
     visible,
     onDismiss,
 }: {
@@ -544,10 +856,21 @@ function TutorialOverlay({
 
 /* ─── Main View ─── */
 const MainView = () => {
+    const navigation = useNavigation<any>();
     const {
         board,
         score,
         bestScore,
+        coins,
+        coinsAdded,
+        coinsBumpTick,
+        destroyUses,
+        blastUses,
+        activePowerMode,
+        pendingPurchasePower,
+        showInsufficientCoinsModal,
+        destroyPowerCost,
+        blastPowerCost,
         scoreAdded,
         scoreBumpTick,
         showHighScoreAnimation,
@@ -555,36 +878,36 @@ const MainView = () => {
         showWinModal,
         mergedCells,
         newTileCells,
+        powerActionCells,
+        powerAnimationTick,
         mergeAnimationTick,
         spawnAnimationTick,
         gesture,
         canUndo,
-        showTutorial,
         retryGame,
         undoMove,
         keepPlaying,
-        dismissTutorial,
-        openTutorial,
+        activateDestroyMode,
+        activateBlastMode,
+        selectPowerTile,
+        cancelPowerMode,
+        buyDestroyPower,
+        buyBlastPower,
+        closePowerModal,
+        openPowerShop,
     } = useMainViewModel();
 
     const mergedCellSet = useMemo(() => new Set(mergedCells), [mergedCells]);
     const newTileCellSet = useMemo(() => new Set(newTileCells), [newTileCells]);
+    const powerActionCellSet = useMemo(() => new Set(powerActionCells), [powerActionCells]);
 
     return (
-        <View className="flex-1 items-center justify-between bg-[#080c18] px-5 pb-3 pt-4">
+        <View className="flex-1 items-center justify-between bg-[#080c18] px-5 pt-4">
             {/* Header */}
             <View className="mb-2 w-full max-w-[400px]">
                 <View className="mb-3 flex-row items-center justify-between">
-                    <View className="h-10 w-10 items-center justify-center rounded-[10px] border border-[rgba(255,255,255,0.10)] bg-[rgba(255,255,255,0.05)]">
-                        <GridIcon />
-                    </View>
                     <Text className="text-5xl font-black tracking-[2px] text-[#00e5ff]">2048</Text>
-                    <Pressable
-                        onPress={openTutorial}
-                        hitSlop={12}
-                        className="h-9 w-9 items-center justify-center rounded-full border-2 border-[#00e5ff] bg-[rgba(0,229,255,0.08)]">
-                        <Text className="text-lg font-extrabold text-[#00e5ff]">?</Text>
-                    </Pressable>
+                    <CoinCounter coins={coins} coinsAdded={coinsAdded} coinsBumpTick={coinsBumpTick} />
                 </View>
 
                 <View className="flex-row justify-between">
@@ -613,8 +936,13 @@ const MainView = () => {
                                         value={cell}
                                         isMerged={mergedCellSet.has(key)}
                                         isNew={newTileCellSet.has(key)}
+                                        isSelectable={activePowerMode != null && cell > 0}
+                                        isPowerAction={powerActionCellSet.has(key)}
+                                        activePowerMode={activePowerMode}
+                                        powerAnimationTick={powerAnimationTick}
                                         mergeAnimationTick={mergeAnimationTick}
                                         spawnAnimationTick={spawnAnimationTick}
+                                        onPress={() => selectPowerTile(rowIndex, colIndex)}
                                     />
                                 );
                             })}
@@ -623,43 +951,63 @@ const MainView = () => {
                 </View>
             </GestureDetector>
 
-            {/* Action Buttons */}
-            <View className="mt-4 flex-row items-center gap-3.5">
-                <Pressable
-                    onPress={undoMove}
-                    disabled={!canUndo}
-                    className="h-[50px] w-[50px] items-center justify-center rounded-full border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.07)]"
-                    style={({ pressed }) => [
-                        pressed && { opacity: 0.7 },
-                        !canUndo && { opacity: 0.35 },
-                    ]}
-                    accessibilityLabel="Undo"
-                    accessibilityRole="button">
-                    <Text
-                        className="text-[22px] font-bold"
-                        style={{ color: canUndo ? T.white : 'rgba(255,255,255,0.3)' }}>
-                        ↩
-                    </Text>
-                </Pressable>
-
-                <Pressable
-                    onPress={retryGame}
-                    className="flex-row items-center gap-2 rounded-full border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.07)] px-6 py-3"
-                    style={({ pressed }) => [
-                        pressed && { opacity: 0.7 },
-                    ]}
-                    accessibilityLabel="New Game"
-                    accessibilityRole="button">
-                    <Text className="text-lg font-bold text-[#00e5ff]">↻</Text>
-                    <Text className="text-[15px] font-bold text-white">New Game</Text>
-                </Pressable>
+            {/* Power Buttons */}
+            <View className="mt-3 w-full items-center">
+                <View className="flex-row items-center">
+                    <View style={{ marginRight: 56 }}>
+                        <PowerButton
+                            label="Destroy"
+                            icon="hammer"
+                            uses={destroyUses}
+                            color={COLORS.magenta}
+                            active={activePowerMode === 'destroy'}
+                            onPress={activateDestroyMode}
+                        />
+                    </View>
+                    <View>
+                        <PowerButton
+                            label="Blast"
+                            icon="wand-sparkles"
+                            uses={blastUses}
+                            color={'#00e5ff'}
+                            active={activePowerMode === 'blast'}
+                            onPress={activateBlastMode}
+                        />
+                    </View>
+                </View>
+                {activePowerMode && (
+                    <View className="mt-2 flex-row items-center gap-3">
+                        <Text className="text-xs font-bold tracking-[1px]" style={{ color: activePowerMode === 'destroy' ? COLORS.pink : COLORS.cyan }}>
+                            {activePowerMode === 'destroy' ? 'Select a tile to destroy' : 'Select a number to blast'}
+                        </Text>
+                        <Pressable onPress={cancelPowerMode} hitSlop={10}>
+                            <Text className="text-xs font-extrabold text-[rgba(255,255,255,0.62)]">Cancel</Text>
+                        </Pressable>
+                    </View>
+                )}
             </View>
 
-            {/* Pro Tip */}
-            <ProTipCard />
+            <Footer
+                canUndo={canUndo}
+                onUndo={undoMove}
+                onRetry={retryGame}
+                onHelp={() => navigation.navigate('Tutorial', { startAtPractice: true })}
+                onShop={openPowerShop}
+            />
 
             {/* High Score Banner */}
             <HighScoreBanner visible={showHighScoreAnimation} />
+
+            <PowerPurchaseModal
+                pendingPower={pendingPurchasePower}
+                destroyCost={destroyPowerCost}
+                blastCost={blastPowerCost}
+                onBuyDestroy={buyDestroyPower}
+                onBuyBlast={buyBlastPower}
+                onCancel={closePowerModal}
+            />
+
+            <InfoModal visible={showInsufficientCoinsModal} onClose={closePowerModal} />
 
             {/* Win Modal */}
             <Modal
@@ -673,7 +1021,7 @@ const MainView = () => {
                         className="w-full max-w-[320px] items-center rounded-[20px] border border-[rgba(255,255,255,0.10)] bg-[rgba(20,25,50,0.95)] px-7 py-8"
                         style={{
                             elevation: 12,
-                            shadowColor: T.cyan,
+                            shadowColor: COLORS.cyan,
                             shadowOffset: { width: 0, height: 0 },
                             shadowOpacity: 0.2,
                             shadowRadius: 20,
@@ -712,7 +1060,7 @@ const MainView = () => {
                         className="w-full max-w-[320px] items-center rounded-[20px] border border-[rgba(255,255,255,0.10)] bg-[rgba(20,25,50,0.95)] px-7 py-8"
                         style={{
                             elevation: 12,
-                            shadowColor: T.cyan,
+                            shadowColor: COLORS.cyan,
                             shadowOffset: { width: 0, height: 0 },
                             shadowOpacity: 0.2,
                             shadowRadius: 20,
@@ -734,11 +1082,6 @@ const MainView = () => {
                 </View>
             </Modal>
 
-            {/* Tutorial Overlay */}
-            <TutorialOverlay
-                visible={showTutorial}
-                onDismiss={dismissTutorial}
-            />
         </View>
     );
 };
