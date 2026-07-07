@@ -12,6 +12,9 @@ import { Directions, Gesture, GestureDetector } from 'react-native-gesture-handl
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Lucide } from '@react-native-vector-icons/lucide/static';
 import { RootStackParamList, TUTORIAL_SEEN_KEY } from './navigation';
+import { GRADIENTS, PALETTE, cardShadow, gradientBg } from './theme';
+import AmbientGlow from './components/AmbientGlow';
+import { GhostButton, GradientButton } from './components/GradientButton';
 
 type Direction = 'left' | 'right' | 'up' | 'down';
 type Props = NativeStackScreenProps<RootStackParamList, 'Tutorial'>;
@@ -26,13 +29,14 @@ const BOARD_WIDTH = Math.min(SCREEN_WIDTH - 40, 380);
 const TILE_SIZE =
     (BOARD_WIDTH - BOARD_PADDING * 2 - TILE_MARGIN * 2 * GRID_SIZE) / GRID_SIZE;
 
-const COLORS: Record<number, { bg: string; text: string; border: string }> = {
-    0: { bg: 'rgba(255,255,255,0.04)', text: 'transparent', border: 'rgba(255,255,255,0.07)' },
-    2: { bg: 'rgba(0,229,255,0.10)', text: '#00e5ff', border: 'rgba(0,229,255,0.45)' },
-    4: { bg: 'rgba(57,255,20,0.10)', text: '#39ff14', border: 'rgba(57,255,20,0.45)' },
-    8: { bg: 'rgba(255,171,0,0.10)', text: '#ffab00', border: 'rgba(255,171,0,0.45)' },
-    16: { bg: 'rgba(224,64,251,0.10)', text: '#e040fb', border: 'rgba(224,64,251,0.45)' },
-    32: { bg: 'rgba(24,255,255,0.10)', text: '#18ffff', border: 'rgba(24,255,255,0.45)' },
+const EMPTY_CELL = { bg: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.07)' };
+
+const COLORS: Record<number, { gradient: string; text: string; border: string }> = {
+    2: { gradient: GRADIENTS.tile2, text: '#CBD5E1', border: 'rgba(255,255,255,0.10)' },
+    4: { gradient: GRADIENTS.tile4, text: '#E2E8F0', border: 'rgba(255,255,255,0.12)' },
+    8: { gradient: GRADIENTS.tile8, text: '#F1F5F9', border: 'rgba(255,255,255,0.14)' },
+    16: { gradient: GRADIENTS.tile16, text: '#FFFFFF', border: 'rgba(255,255,255,0.16)' },
+    32: { gradient: GRADIENTS.tile32, text: '#FFF7E8', border: 'rgba(255,255,255,0.18)' },
 };
 
 const INTRO_STEPS: Array<{ key: IntroStep; text: string }> = [
@@ -131,7 +135,7 @@ const STEPS: Array<{
     ];
 
 function getTileStyle(value: number) {
-    return COLORS[value] ?? { bg: 'rgba(255,255,255,0.10)', text: '#ffffff', border: 'rgba(255,255,255,0.35)' };
+    return COLORS[value] ?? { gradient: GRADIENTS.tileHigh, text: '#3A2600', border: 'rgba(255,255,255,0.55)' };
 }
 
 function tileFontSize(value: number) {
@@ -184,16 +188,18 @@ function TutorialTile({
 
     return (
         <Animated.View
-            className="items-center justify-center rounded-[10px]"
-            style={{
-                width: TILE_SIZE,
-                height: TILE_SIZE,
-                margin: TILE_MARGIN,
-                backgroundColor: colors.bg,
-                borderColor: colors.border,
-                borderWidth: value > 0 ? 1.5 : 1,
-                transform: [{ scale }],
-            }}>
+            className="items-center justify-center overflow-hidden rounded-[16px]"
+            style={[
+                value === 0 ? { backgroundColor: EMPTY_CELL.bg } : gradientBg(colors.gradient),
+                {
+                    width: TILE_SIZE,
+                    height: TILE_SIZE,
+                    margin: TILE_MARGIN,
+                    borderColor: value === 0 ? EMPTY_CELL.border : colors.border,
+                    borderWidth: 1,
+                    transform: [{ scale }],
+                },
+            ]}>
             {value > 0 && (
                 <Text
                     className="font-extrabold"
@@ -218,8 +224,12 @@ function TutorialBoard({
 }) {
     return (
         <View
-            className="rounded-[14px] border border-[rgba(255,255,255,0.10)] bg-[rgba(15,20,45,0.95)]"
-            style={{ width: BOARD_WIDTH, padding: BOARD_PADDING }}>
+            className="overflow-hidden rounded-[24px] border-[1.5px]"
+            style={[
+                gradientBg(GRADIENTS.boardBg),
+                { width: BOARD_WIDTH, padding: BOARD_PADDING, borderColor: PALETTE.border },
+                cardShadow('#000000', 0.4, 20),
+            ]}>
             {board.map((row, rowIndex) => (
                 <View key={rowIndex} className="flex-row justify-center">
                     {row.map((value, colIndex) => {
@@ -275,9 +285,9 @@ function SwipeNudge({ direction }: { direction: Direction }) {
         <View className="mt-5 items-center">
             <Animated.View
                 style={{ transform: [{ translateX }, { translateY }] }}>
-                <Lucide name={SWIPE_ICONS[direction]} size={46} color="#39ff14" />
+                <Lucide name={SWIPE_ICONS[direction]} size={46} color={PALETTE.sapphire} />
             </Animated.View>
-            <Text className="text-sm font-extrabold tracking-[2px] text-[#ffd740]">
+            <Text className="text-sm font-extrabold tracking-[2px]" style={{ color: PALETTE.gold }}>
                 SWIPE {direction.toUpperCase()}
             </Text>
         </View>
@@ -455,7 +465,8 @@ export default function TutorialView({ navigation, route }: Props) {
     });
 
     return (
-        <Animated.View className="flex-1 bg-black" style={{ opacity: fade }}>
+        <Animated.View className="flex-1" style={[gradientBg(GRADIENTS.appBg), { opacity: fade }]}>
+            <AmbientGlow />
             {startsAtPractice && phase === 'practice' && (
                 <Pressable
                     className="absolute left-5 top-10 z-10 h-11 w-11 mt-4 items-center justify-center rounded-full border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.07)]"
@@ -481,39 +492,22 @@ export default function TutorialView({ navigation, route }: Props) {
                         <View className="absolute bottom-9 w-full max-w-[390px] px-7">
                             {currentIntroStep.key === 'help' ? (
                                 <View className="flex-row gap-3">
-                                    <Pressable
-                                        onPress={goToGame}
-                                        className="flex-1 items-center rounded-[14px] border border-[rgba(255,255,255,0.22)] py-4"
-                                        style={({ pressed }) => [pressed && { opacity: 0.75 }]}>
-                                        <Text className="text-base font-extrabold tracking-[1px] text-white">
-                                            Skip
-                                        </Text>
-                                    </Pressable>
-                                    <Pressable
-                                        onPress={advanceIntro}
-                                        className="flex-1 items-center rounded-[14px] bg-[#ff2d78] py-4"
-                                        style={({ pressed }) => [pressed && { opacity: 0.85 }]}>
-                                        <Text className="text-base font-extrabold tracking-[1px] text-white">
-                                            Next
-                                        </Text>
-                                    </Pressable>
+                                    <View className="flex-1">
+                                        <GhostButton label="Skip" onPress={goToGame} style={{ width: '100%' }} />
+                                    </View>
+                                    <View className="flex-1">
+                                        <GradientButton label="Next" onPress={advanceIntro} style={{ width: '100%' }} />
+                                    </View>
                                 </View>
                             ) : (
-                                <Pressable
-                                    onPress={advanceIntro}
-                                    className="items-center rounded-[14px] bg-[#ff2d78] py-4"
-                                    style={({ pressed }) => [pressed && { opacity: 0.85 }]}>
-                                    <Text className="text-base font-extrabold tracking-[1px] text-white">
-                                        Next
-                                    </Text>
-                                </Pressable>
+                                <GradientButton label="Next" onPress={advanceIntro} style={{ width: '100%' }} />
                             )}
                         </View>
                     )}
                 </View>
             ) : (
                 <View className="flex-1 items-center justify-center px-5">
-                    <Text className="mb-3 text-center text-3xl font-black text-[#00e5ff]">
+                    <Text className="mb-3 text-center text-3xl font-black" style={{ color: PALETTE.sapphire }}>
                         Practice Move
                     </Text>
                     <Text className="mb-5 text-center text-base font-semibold leading-6 text-white">

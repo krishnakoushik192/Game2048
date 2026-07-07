@@ -1,8 +1,7 @@
 import React from 'react';
-import { Dimensions, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { MaterialDesignIcons } from '@react-native-vector-icons/material-design-icons/static';
-
-const SCREEN_WIDTH = Dimensions.get('window').width;
+import { PALETTE, cardShadow } from '../theme';
 
 type FooterProps = {
     canUndo: boolean;
@@ -14,55 +13,52 @@ type FooterProps = {
 
 const Footer = ({ canUndo, onUndo, onRetry, onHelp, onShop }: FooterProps) => {
     const footerItems = [
-        { label: 'UNDO', icon: 'undo-variant', onPress: onUndo, disabled: !canUndo, color: '#8be9ff' },
-        { label: 'RESET', icon: 'refresh', onPress: onRetry, disabled: false, color: '#8be9ff' },
-        { label: 'HELP', icon: 'help-circle-outline', onPress: onHelp, disabled: false, color: '#8be9ff' },
-        { label: 'SHOP', icon: 'cart-outline', onPress: onShop, disabled: false, color: '#8be9ff' },
+        { label: 'Undo', icon: 'undo-variant', onPress: onUndo, disabled: !canUndo, color: PALETTE.sapphire },
+        { label: 'Reset', icon: 'refresh', onPress: onRetry, disabled: false, color: PALETTE.sapphire },
+        { label: 'Help', icon: 'help-circle-outline', onPress: onHelp, disabled: false, color: PALETTE.sapphire },
+        { label: 'Shop', icon: 'cart-outline', onPress: onShop, disabled: false, color: PALETTE.gold },
     ] as const;
 
     return (
         <View
-            className="mt-3 flex-row items-center justify-around rounded-t-[14px] border-t border-[rgba(126,205,255,0.18)] bg-[rgba(5,14,28,0.96)] px-4 pb-3.5 pt-3.5"
-            style={{
-                width: SCREEN_WIDTH,
-            }}>
+            className="mb-2 mt-3 w-full max-w-[400px] flex-row items-center justify-around overflow-hidden rounded-[24px] border-[1.5px] px-2 py-2.5"
+            style={[
+                { borderColor: PALETTE.glassBorder, backgroundColor: PALETTE.surfaceAlt },
+                cardShadow('#000000', 0.35, 18),
+            ]}>
             {footerItems.map(item => (
-                <View key={item.label} className="min-w-[54px] items-center space-y-1">
-                    <Pressable
-                        onPress={item.onPress}
-                        disabled={item.disabled}
-                        className="items-center justify-center"
-                        style={({ pressed }) => [
-                            {
-                                backgroundColor: item.disabled ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.10)',
-                            },
-                            pressed && { opacity: 0.65 },
-                            item.disabled && { opacity: 0.8 },
-                        ]}
-                        accessibilityLabel={item.label}
-                        accessibilityRole="button">
+                <Pressable
+                    key={item.label}
+                    onPress={item.onPress}
+                    disabled={item.disabled}
+                    className="min-w-[64px] items-center rounded-2xl py-2"
+                    style={({ pressed }) => [
+                        { transform: [{ scale: pressed ? 0.93 : 1 }] },
+                        pressed && !item.disabled && { backgroundColor: 'rgba(255,255,255,0.06)' },
+                    ]}
+                    accessibilityLabel={item.label}
+                    accessibilityRole="button">
+                    <View
+                        className="items-center justify-center rounded-full"
+                        style={{
+                            width: 42,
+                            height: 42,
+                            backgroundColor: item.disabled ? 'rgba(255,255,255,0.04)' : `${item.color}1f`,
+                            borderWidth: 1,
+                            borderColor: item.disabled ? 'rgba(255,255,255,0.08)' : `${item.color}55`,
+                        }}>
                         <MaterialDesignIcons
                             name={item.icon}
-                            size={28}
-                            color={item.disabled ? `${item.color}aa` : item.color}
-                            style={{
-                                textShadowColor: item.disabled ? 'transparent' : `${item.color}44`,
-                                textShadowOffset: { width: 0, height: 0 },
-                                textShadowRadius: 5,
-                            }}
+                            size={22}
+                            color={item.disabled ? 'rgba(255,255,255,0.28)' : item.color}
                         />
-                    </Pressable>
+                    </View>
                     <Text
-                        className="text-sm font-black tracking-[0.7px]"
-                        style={{
-                            color: item.disabled ? `${item.color}88` : `${item.color}cc`,
-                            textShadowColor: item.disabled ? 'transparent' : `${item.color}33`,
-                            textShadowOffset: { width: 0, height: 0 },
-                            textShadowRadius: 4,
-                        }}>
+                        className="mt-1.5 text-[11px] font-bold tracking-[0.4px]"
+                        style={{ color: item.disabled ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.85)' }}>
                         {item.label}
                     </Text>
-                </View>
+                </Pressable>
             ))}
         </View>
     );

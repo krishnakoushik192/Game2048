@@ -12,8 +12,10 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import MainView from './src/MainView';
 import TutorialView from './src/TutorialView';
 import { RootStackParamList, TUTORIAL_SEEN_KEY } from './src/navigation';
+import { PALETTE } from './src/theme';
+import AmbientGlow from './src/components/AmbientGlow';
 
-const BG = '#080c18';
+const BG = PALETTE.bg;
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function App() {
@@ -33,23 +35,26 @@ function App() {
   }, []);
 
   return (
-    <GestureHandlerRootView className="flex-1 bg-[#080c18]">
+    // NOTE: keep the background as part of `className` (not a separate `style`
+    // prop) on GestureHandlerRootView — combining `style` with `className` on
+    // this component causes NativeWind to drop the className styles entirely
+    // (including `flex-1`), which collapses the whole app to a blank screen.
+    <GestureHandlerRootView className="flex-1 bg-[#050505]">
       <SafeAreaProvider>
         <StatusBar
           barStyle="light-content"
           backgroundColor={BG}
           translucent={false}
         />
-        <SafeAreaView
-          className="flex-1 border border-[rgba(0,100,255,0.25)] bg-[#080c18]"
-          edges={['top', 'bottom']}>
+        <SafeAreaView className="flex-1" edges={['top', 'bottom']}>
+          <AmbientGlow />
           {initialRoute && (
             <NavigationContainer>
               <Stack.Navigator
                 initialRouteName={initialRoute}
                 screenOptions={{
                   headerShown: false,
-                  contentStyle: { backgroundColor: BG },
+                  contentStyle: { backgroundColor: 'transparent' },
                 }}>
                 <Stack.Screen name="Tutorial" component={TutorialView} />
                 <Stack.Screen name="Game" component={MainView} />
