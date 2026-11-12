@@ -121,6 +121,7 @@ export default function ColorRecallScreen() {
 
     return (
         <GameShell
+            tutorial="colorRecall"
             title="Color Recall"
             background={COLOR.tint}
             footer={

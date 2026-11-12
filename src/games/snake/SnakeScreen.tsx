@@ -112,6 +112,7 @@ export default function SnakeScreen() {
 
     return (
         <GameShell
+            tutorial="snake"
             title="Snake"
             background={COLOR.tint}
             scroll={false}

@@ -115,6 +115,7 @@ export default function DropFourScreen() {
 
     return (
         <GameShell
+            tutorial="dropFour"
             title="Drop Four"
             background={COLOR.tint}
             action={{ icon: 'rotate-ccw', label: 'Restart round', onPress: nextRound }}

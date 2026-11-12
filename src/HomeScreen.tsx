@@ -14,7 +14,7 @@ import { GameStats, loadStats, todayKey } from './shared/stats';
 import type { RootStackParamList } from './navigation';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
-type Route = Exclude<keyof RootStackParamList, 'Home' | 'Tutorial'>;
+type Route = Exclude<keyof RootStackParamList, 'Home' | 'Welcome'>;
 
 type GameEntry = {
     id: Exclude<GameId, 'g2048'>;

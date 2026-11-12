@@ -3,6 +3,9 @@ import { ScrollView, StatusBar, StyleSheet, Text, View, useWindowDimensions } fr
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, fonts } from '../theme';
+import type { GameId } from '../theme';
+import { HowToPlay } from '../tutorial/HowToPlay';
+import { useTutorial } from '../tutorial/seen';
 import { IconButton } from './ui';
 import type { IconName } from './ui';
 
@@ -16,7 +19,8 @@ export function useBoardSize(max = 380) {
 
 /**
  * Shared frame for every game: safe-area padding, tinted background,
- * back button, title and one action on the right.
+ * back button, title, a "?" button and one action on the right.
+ * With `tutorial`, the game's How to play opens by itself the first time.
  */
 export function GameShell({
     title,
@@ -25,6 +29,7 @@ export function GameShell({
     children,
     footer,
     scroll = true,
+    tutorial,
 }: {
     /** Swipe-driven games pass false so the scroll view never steals the gesture. */
     scroll?: boolean;
@@ -33,22 +38,29 @@ export function GameShell({
     action?: Action;
     children: React.ReactNode;
     footer?: React.ReactNode;
+    tutorial?: GameId;
 }) {
     const navigation = useNavigation();
     const insets = useSafeAreaInsets();
+    const howTo = useTutorial(tutorial);
+    const rightCount = (tutorial ? 1 : 0) + (action ? 1 : 0);
+    // Both sides get the same width so the title stays centred.
+    const sideWidth = Math.max(1, rightCount) * 44 + (Math.max(1, rightCount) - 1) * 8;
 
     return (
         <View style={[styles.root, { backgroundColor: background, paddingTop: insets.top + 12 }]}>
             <StatusBar barStyle="dark-content" backgroundColor={background} />
             <View style={styles.header}>
-                <IconButton icon="chevron-left" label="Back" onPress={() => navigation.goBack()} />
+                <View style={[styles.side, { width: sideWidth }]}>
+                    <IconButton icon="chevron-left" label="Back" onPress={() => navigation.goBack()} />
+                </View>
                 <Text style={styles.title} numberOfLines={1} accessibilityRole="header">{title}</Text>
-                {action ? (
-                    <IconButton icon={action.icon} label={action.label} onPress={action.onPress} />
-                ) : (
-                    <View style={styles.spacer} />
-                )}
+                <View style={[styles.side, styles.sideRight, { width: sideWidth }]}>
+                    {tutorial && <IconButton icon="circle-help" label="How to play" onPress={howTo.open} />}
+                    {action && <IconButton icon={action.icon} label={action.label} onPress={action.onPress} />}
+                </View>
             </View>
+            {tutorial && <HowToPlay game={tutorial} visible={howTo.visible} onClose={howTo.close} />}
             {scroll ? (
                 <ScrollView
                     contentContainerStyle={styles.content}
@@ -83,7 +95,8 @@ const styles = StyleSheet.create({
         color: colors.ink,
         marginHorizontal: 8,
     },
-    spacer: { width: 44 },
+    side: { flexDirection: 'row', gap: 8 },
+    sideRight: { justifyContent: 'flex-end' },
     fill: { flex: 1 },
     content: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16, gap: 16, alignItems: 'stretch' },
     footer: { paddingHorizontal: 20, paddingTop: 8, gap: 10 },

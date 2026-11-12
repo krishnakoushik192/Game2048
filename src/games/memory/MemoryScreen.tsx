@@ -118,6 +118,7 @@ export default function MemoryScreen() {
 
     return (
         <GameShell
+            tutorial="memory"
             title="Memory Match"
             background={COLOR.tint}
             action={{ icon: 'rotate-ccw', label: 'New game', onPress: () => reset() }}

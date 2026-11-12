@@ -1,6 +1,6 @@
 export type RootStackParamList = {
+    Welcome: undefined;
     Home: undefined;
-    Tutorial: { startAtPractice?: boolean } | undefined;
     Game: undefined;
     TicTacToe: undefined;
     Memory: undefined;
@@ -11,4 +11,5 @@ export type RootStackParamList = {
     MineFinder: undefined;
 };
 
-export const TUTORIAL_SEEN_KEY = '@game2048_tutorial_seen';
+/** Same key the old 2048 tutorial used, so existing players skip the welcome. */
+export const WELCOME_SEEN_KEY = '@game2048_tutorial_seen';

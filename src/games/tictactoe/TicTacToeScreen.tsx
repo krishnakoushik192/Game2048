@@ -106,6 +106,7 @@ export default function TicTacToeScreen() {
 
     return (
         <GameShell
+            tutorial="tictactoe"
             title="Tic-Tac-Toe"
             background={COLOR.tint}
             action={{ icon: 'rotate-ccw', label: 'Restart round', onPress: nextRound }}

@@ -110,6 +110,7 @@ export default function MineFinderScreen() {
 
     return (
         <GameShell
+            tutorial="mines"
             title="Mine Finder"
             background={COLOR.tint}
             action={{ icon: 'rotate-ccw', label: 'New field', onPress: () => reset() }}

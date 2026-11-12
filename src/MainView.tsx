@@ -10,7 +10,6 @@ import {
     Text,
     View,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import { Lucide } from '@react-native-vector-icons/lucide/static';
 import { useMainViewModel } from './MianViewModel';
@@ -436,7 +435,6 @@ const highestTile = (board: number[][]) => Math.max(...board.flat());
 
 /* ─── Main View ─── */
 const MainView = () => {
-    const navigation = useNavigation<any>();
     const { soundEnabled, toggleSound } = usePlaybox();
     const { recordResult } = useGameStats('g2048');
     const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -543,6 +541,7 @@ const MainView = () => {
 
     return (
         <GameShell
+            tutorial="g2048"
             title="2048"
             background={colors.cream}
             scroll={false}
@@ -554,7 +553,6 @@ const MainView = () => {
             footer={
                 <View style={styles.footerRow}>
                     <ChunkyButton label="New game" icon="rotate-ccw" color={colors.ink} textColor={colors.white} style={styles.flex} onPress={() => setShowResetConfirm(true)} />
-                    <ChunkyButton icon="circle-help" accessibilityLabel="How to play" onPress={() => navigation.navigate('Tutorial', { startAtPractice: true })} />
                     <ChunkyButton icon="shopping-bag" accessibilityLabel="Power shop" onPress={openPowerShop} />
                 </View>
             }>

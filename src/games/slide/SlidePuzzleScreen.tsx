@@ -80,6 +80,7 @@ export default function SlidePuzzleScreen() {
 
     return (
         <GameShell
+            tutorial="slide"
             title="Slide Puzzle"
             background={COLOR.tint}
             scroll={false}
