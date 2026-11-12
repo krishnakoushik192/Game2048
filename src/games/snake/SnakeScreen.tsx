@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState, StyleSheet, Text, View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
-import { colors, gameColors, outlined } from '../../theme';
+import { colors, gameColors, outlined, fonts } from '../../theme';
 import { GameShell, useBoardSize } from '../../shared/GameShell';
 import { ChunkyButton, StatChip } from '../../shared/ui';
 import { ResultModal } from '../../shared/ResultModal';
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         backgroundColor: 'rgba(255,255,255,0.6)',
     },
-    overlayText: { fontSize: 18, fontWeight: '800', color: colors.ink, textAlign: 'center', paddingHorizontal: 24 },
+    overlayText: { fontSize: 18, fontFamily: fonts.heavy, color: colors.ink, textAlign: 'center', paddingHorizontal: 24 },
     pad: { alignItems: 'center', gap: 8 },
     padRow: { flexDirection: 'row', gap: 8 },
     padButton: { width: 72 },

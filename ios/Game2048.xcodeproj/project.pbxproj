@@ -12,6 +12,13 @@
 		A10000000000000000000002 /* GameAudioBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000006 /* GameAudioBridge.m */; };
 		A10000000000000000000003 /* background_song.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000007 /* background_song.mp3 */; };
 		A10000000000000000000004 /* move_effect.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000008 /* move_effect.mp3 */; };
+		A10000000000000000000010 /* Fredoka-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000020 /* Fredoka-Medium.ttf */; };
+		A10000000000000000000011 /* Fredoka-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000021 /* Fredoka-SemiBold.ttf */; };
+		A10000000000000000000012 /* Fredoka-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000022 /* Fredoka-Bold.ttf */; };
+		A10000000000000000000013 /* Nunito-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000023 /* Nunito-Regular.ttf */; };
+		A10000000000000000000014 /* Nunito-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000024 /* Nunito-SemiBold.ttf */; };
+		A10000000000000000000015 /* Nunito-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000025 /* Nunito-Bold.ttf */; };
+		A10000000000000000000016 /* Nunito-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000026 /* Nunito-ExtraBold.ttf */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
@@ -26,6 +33,13 @@
 		A10000000000000000000006 /* GameAudioBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = GameAudioBridge.m; path = Game2048/GameAudioBridge.m; sourceTree = "<group>"; };
 		A10000000000000000000007 /* background_song.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = background_song.mp3; path = Game2048/Audio/background_song.mp3; sourceTree = "<group>"; };
 		A10000000000000000000008 /* move_effect.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = move_effect.mp3; path = Game2048/Audio/move_effect.mp3; sourceTree = "<group>"; };
+		A10000000000000000000020 /* Fredoka-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Fredoka-Medium.ttf"; path = "Game2048/Fonts/Fredoka-Medium.ttf"; sourceTree = "<group>"; };
+		A10000000000000000000021 /* Fredoka-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Fredoka-SemiBold.ttf"; path = "Game2048/Fonts/Fredoka-SemiBold.ttf"; sourceTree = "<group>"; };
+		A10000000000000000000022 /* Fredoka-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Fredoka-Bold.ttf"; path = "Game2048/Fonts/Fredoka-Bold.ttf"; sourceTree = "<group>"; };
+		A10000000000000000000023 /* Nunito-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Nunito-Regular.ttf"; path = "Game2048/Fonts/Nunito-Regular.ttf"; sourceTree = "<group>"; };
+		A10000000000000000000024 /* Nunito-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Nunito-SemiBold.ttf"; path = "Game2048/Fonts/Nunito-SemiBold.ttf"; sourceTree = "<group>"; };
+		A10000000000000000000025 /* Nunito-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Nunito-Bold.ttf"; path = "Game2048/Fonts/Nunito-Bold.ttf"; sourceTree = "<group>"; };
+		A10000000000000000000026 /* Nunito-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Nunito-ExtraBold.ttf"; path = "Game2048/Fonts/Nunito-ExtraBold.ttf"; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-Game2048.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Game2048.debug.xcconfig"; path = "Target Support Files/Pods-Game2048/Pods-Game2048.debug.xcconfig"; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-Game2048.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Game2048.release.xcconfig"; path = "Target Support Files/Pods-Game2048/Pods-Game2048.release.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-Game2048.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Game2048.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -54,6 +68,7 @@
 				A10000000000000000000005 /* GameAudio.swift */,
 				A10000000000000000000006 /* GameAudioBridge.m */,
 				A10000000000000000000009 /* Audio */,
+				A10000000000000000000030 /* Fonts */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
@@ -77,6 +92,20 @@
 				A10000000000000000000008 /* move_effect.mp3 */,
 			);
 			name = Audio;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000030 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000020 /* Fredoka-Medium.ttf */,
+				A10000000000000000000021 /* Fredoka-SemiBold.ttf */,
+				A10000000000000000000022 /* Fredoka-Bold.ttf */,
+				A10000000000000000000023 /* Nunito-Regular.ttf */,
+				A10000000000000000000024 /* Nunito-SemiBold.ttf */,
+				A10000000000000000000025 /* Nunito-Bold.ttf */,
+				A10000000000000000000026 /* Nunito-ExtraBold.ttf */,
+			);
+			name = Fonts;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -180,6 +209,13 @@
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				A10000000000000000000003 /* background_song.mp3 in Resources */,
 				A10000000000000000000004 /* move_effect.mp3 in Resources */,
+				A10000000000000000000010 /* Fredoka-Medium.ttf in Resources */,
+				A10000000000000000000011 /* Fredoka-SemiBold.ttf in Resources */,
+				A10000000000000000000012 /* Fredoka-Bold.ttf in Resources */,
+				A10000000000000000000013 /* Nunito-Regular.ttf in Resources */,
+				A10000000000000000000014 /* Nunito-SemiBold.ttf in Resources */,
+				A10000000000000000000015 /* Nunito-Bold.ttf in Resources */,
+				A10000000000000000000016 /* Nunito-ExtraBold.ttf in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

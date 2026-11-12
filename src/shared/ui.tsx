@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
 import { Lucide } from '@react-native-vector-icons/lucide/static';
-import { chunky, colors, outlined, radius } from '../theme';
+import { chunky, colors, outlined, radius, fonts } from '../theme';
 
 export type IconName = React.ComponentProps<typeof Lucide>['name'];
 
@@ -169,7 +169,7 @@ export const styles = StyleSheet.create({
         paddingHorizontal: 16,
         borderRadius: radius.button,
     },
-    buttonText: { fontWeight: '800' },
+    buttonText: { fontFamily: fonts.heavy },
     iconButton: {
         width: 44,
         height: 44,
@@ -185,8 +185,8 @@ export const styles = StyleSheet.create({
         paddingVertical: 6,
         paddingHorizontal: 12,
     },
-    chipLabel: { fontSize: 12, fontWeight: '800' },
-    chipValue: { fontSize: 24, fontWeight: '800', color: colors.ink },
+    chipLabel: { fontSize: 12, fontFamily: fonts.heavy },
+    chipValue: { fontSize: 24, fontFamily: fonts.display, color: colors.ink },
     coinPill: {
         height: 38,
         paddingHorizontal: 12,
@@ -197,7 +197,7 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 6,
     },
-    coinText: { fontSize: 15, fontWeight: '800', color: colors.ink },
+    coinText: { fontSize: 15, fontFamily: fonts.heavy, color: colors.ink },
     segmented: {
         flexDirection: 'row',
         height: 46,
@@ -213,7 +213,7 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    segmentText: { fontSize: 14, fontWeight: '800', color: colors.ink },
+    segmentText: { fontSize: 14, fontFamily: fonts.heavy, color: colors.ink },
     banner: {
         borderRadius: 16,
         ...outlined,

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, gameColors, outlined } from '../../theme';
+import { colors, gameColors, outlined, fonts } from '../../theme';
 import { GameShell, useBoardSize } from '../../shared/GameShell';
 import { Banner, ChunkyButton, Segmented } from '../../shared/ui';
 import { usePlaybox } from '../../shared/playbox';
@@ -189,8 +189,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         paddingVertical: 10,
     },
-    playerName: { flex: 1, fontSize: 15, fontWeight: '800', color: colors.ink },
-    playerScore: { fontSize: 22, fontWeight: '800', color: colors.ink },
+    playerName: { flex: 1, fontSize: 15, fontFamily: fonts.heavy, color: colors.ink },
+    playerScore: { fontSize: 22, fontFamily: fonts.display, color: colors.ink },
     board: {
         alignSelf: 'center',
         flexDirection: 'row',
@@ -204,5 +204,5 @@ const styles = StyleSheet.create({
     column: { borderRadius: 999 },
     hint: { backgroundColor: 'rgba(255,255,255,0.45)' },
     disc: { borderRadius: 999, ...outlined },
-    status: { flex: 1, fontSize: 16, fontWeight: '800', color: colors.ink },
+    status: { flex: 1, fontSize: 16, fontFamily: fonts.heavy, color: colors.ink },
 });

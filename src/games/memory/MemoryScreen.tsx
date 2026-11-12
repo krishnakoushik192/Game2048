@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, gameColors, outlined, chunky } from '../../theme';
+import { colors, gameColors, outlined, chunky, fonts } from '../../theme';
 import { GameShell, useBoardSize } from '../../shared/GameShell';
 import { ChunkyButton, Segmented, StatChip } from '../../shared/ui';
 import { ResultModal } from '../../shared/ResultModal';
@@ -188,6 +188,6 @@ const styles = StyleSheet.create({
     row: { flexDirection: 'row', gap: 10 },
     grid: { alignSelf: 'center', flexDirection: 'row', flexWrap: 'wrap' },
     card: { borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-    face: { fontWeight: '800' },
-    hint: { fontSize: 14, fontWeight: '700', color: colors.muted, textAlign: 'center' },
+    face: { fontFamily: fonts.display },
+    hint: { fontSize: 14, fontFamily: fonts.bold, color: colors.muted, textAlign: 'center' },
 });

@@ -2,7 +2,7 @@ import React from 'react';
 import { ScrollView, StatusBar, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors } from '../theme';
+import { colors, fonts } from '../theme';
 import { IconButton } from './ui';
 import type { IconName } from './ui';
 
@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
         flex: 1,
         textAlign: 'center',
         fontSize: 24,
-        fontWeight: '800',
+        fontFamily: fonts.display,
         color: colors.ink,
         marginHorizontal: 8,
     },

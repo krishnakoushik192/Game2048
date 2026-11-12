@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { chunky, colors, gameColors, outlined } from '../../theme';
+import { chunky, colors, gameColors, outlined, fonts } from '../../theme';
 import { GameShell, useBoardSize } from '../../shared/GameShell';
 import { Banner, ChunkyButton, StatChip } from '../../shared/ui';
 import { ResultModal } from '../../shared/ResultModal';
@@ -188,7 +188,7 @@ export default function ColorRecallScreen() {
 const styles = StyleSheet.create({
     row: { flexDirection: 'row', gap: 10 },
     center: { alignItems: 'center', gap: 8, minHeight: 56 },
-    phase: { fontSize: 22, fontWeight: '800', color: colors.ink },
+    phase: { fontSize: 22, fontFamily: fonts.display, color: colors.ink },
     dots: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 6 },
     dot: { width: 14, height: 14, borderRadius: 7, ...outlined, backgroundColor: colors.card },
     pads: { alignSelf: 'center', flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    hubValue: { fontSize: 30, fontWeight: '800', color: colors.ink },
-    hubLabel: { fontSize: 11, fontWeight: '800', color: colors.muted },
-    help: { flex: 1, fontSize: 14, fontWeight: '700', color: colors.ink },
+    hubValue: { fontSize: 30, fontFamily: fonts.display, color: colors.ink },
+    hubLabel: { fontSize: 11, fontFamily: fonts.heavy, color: colors.muted },
+    help: { flex: 1, fontSize: 14, fontFamily: fonts.bold, color: colors.ink },
 });

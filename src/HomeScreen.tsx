@@ -5,7 +5,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Lucide } from '@react-native-vector-icons/lucide/static';
-import { chunky, colors, gameColors, outlined, radius } from './theme';
+import { chunky, colors, gameColors, outlined, radius, fonts } from './theme';
 import type { GameId } from './theme';
 import { ChunkyButton, CoinPill, IconButton } from './shared/ui';
 import type { IconName } from './shared/ui';
@@ -167,8 +167,8 @@ const styles = StyleSheet.create({
     flex: { flex: 1 },
     header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
     headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    kicker: { fontSize: 13, fontWeight: '700', color: colors.muted },
-    hello: { fontSize: 28, fontWeight: '800', color: colors.ink },
+    kicker: { fontSize: 13, fontFamily: fonts.bold, color: colors.muted },
+    hello: { fontSize: 28, fontFamily: fonts.display, color: colors.ink },
     daily: {
         backgroundColor: '#6A4BE0',
         borderRadius: 22,
@@ -177,11 +177,11 @@ const styles = StyleSheet.create({
         gap: 12,
     },
     dailyTop: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-    dailyKicker: { fontSize: 12, fontWeight: '800', letterSpacing: 1, color: '#E6DEFF' },
-    dailyTitle: { fontSize: 20, fontWeight: '800', color: colors.white },
-    dailyNote: { fontSize: 14, fontWeight: '700', color: colors.white },
+    dailyKicker: { fontSize: 12, fontFamily: fonts.heavy, letterSpacing: 1, color: '#E6DEFF' },
+    dailyTitle: { fontSize: 20, fontFamily: fonts.display, color: colors.white },
+    dailyNote: { fontSize: 14, fontFamily: fonts.bold, color: colors.white },
     reward: { backgroundColor: colors.coin, borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 6 },
-    rewardText: { fontSize: 13, fontWeight: '800', color: colors.ink },
+    rewardText: { fontSize: 13, fontFamily: fonts.heavy, color: colors.ink },
     featured: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -199,10 +199,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    featuredIconText: { fontSize: 16, fontWeight: '800', color: colors.ink },
-    featuredKicker: { fontSize: 12, fontWeight: '800', letterSpacing: 1, color: '#A34A12' },
-    featuredTitle: { fontSize: 24, fontWeight: '800', color: colors.ink },
-    section: { fontSize: 20, fontWeight: '800', color: colors.ink },
+    featuredIconText: { fontSize: 16, fontFamily: fonts.display, color: colors.ink },
+    featuredKicker: { fontSize: 12, fontFamily: fonts.heavy, letterSpacing: 1, color: '#A34A12' },
+    featuredTitle: { fontSize: 24, fontFamily: fonts.display, color: colors.ink },
+    section: { fontSize: 20, fontFamily: fonts.display, color: colors.ink },
     grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
     card: {
         width: '47.8%',
@@ -221,6 +221,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    cardTitle: { fontSize: 15, fontWeight: '800', color: colors.ink },
-    meta: { fontSize: 12, fontWeight: '700', color: colors.muted },
+    cardTitle: { fontSize: 15, fontFamily: fonts.display, color: colors.ink },
+    meta: { fontSize: 12, fontFamily: fonts.bold, color: colors.muted },
 });

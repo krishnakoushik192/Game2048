@@ -2,7 +2,7 @@ import React from 'react';
 import { Modal, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Lucide } from '@react-native-vector-icons/lucide/static';
-import { chunky, colors, outlined, radius } from '../theme';
+import { chunky, colors, outlined, radius, fonts } from '../theme';
 import { ChunkyButton } from './ui';
 
 export type ResultInfo = {
@@ -91,8 +91,8 @@ const styles = StyleSheet.create({
         gap: 12,
     },
     top: { alignItems: 'center', gap: 4 },
-    title: { fontSize: 30, fontWeight: '800', color: colors.ink },
-    subtitle: { fontSize: 15, fontWeight: '700', color: colors.ink },
+    title: { fontSize: 30, fontFamily: fonts.display, color: colors.ink },
+    subtitle: { fontSize: 15, fontFamily: fonts.bold, color: colors.ink },
     card: {
         backgroundColor: colors.card,
         borderRadius: 22,
@@ -101,8 +101,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 10,
     },
-    scoreLabel: { fontSize: 12, fontWeight: '800', color: colors.muted },
-    score: { fontSize: 44, fontWeight: '800', color: colors.ink },
+    scoreLabel: { fontSize: 12, fontFamily: fonts.heavy, color: colors.muted },
+    score: { fontSize: 44, fontFamily: fonts.display, color: colors.ink },
     best: {
         backgroundColor: colors.success,
         borderRadius: radius.pill,
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         paddingVertical: 4,
     },
-    bestText: { fontSize: 13, fontWeight: '800', color: colors.ink },
+    bestText: { fontSize: 13, fontFamily: fonts.heavy, color: colors.ink },
     statsRow: { flexDirection: 'row', gap: 8, alignSelf: 'stretch' },
     stat: {
         flex: 1,
@@ -119,8 +119,8 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
         alignItems: 'center',
     },
-    statValue: { fontSize: 18, fontWeight: '800', color: colors.ink },
-    statLabel: { fontSize: 12, fontWeight: '700', color: colors.muted },
+    statValue: { fontSize: 18, fontFamily: fonts.display, color: colors.ink },
+    statLabel: { fontSize: 12, fontFamily: fonts.bold, color: colors.muted },
     coins: {
         alignSelf: 'stretch',
         flexDirection: 'row',
@@ -132,6 +132,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 14,
         paddingVertical: 8,
     },
-    coinsLabel: { fontSize: 14, fontWeight: '800', color: colors.ink },
-    coinsValue: { fontSize: 20, fontWeight: '800', color: colors.ink },
+    coinsLabel: { fontSize: 14, fontFamily: fonts.heavy, color: colors.ink },
+    coinsValue: { fontSize: 20, fontFamily: fonts.display, color: colors.ink },
 });

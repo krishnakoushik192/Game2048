@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Lucide } from '@react-native-vector-icons/lucide/static';
-import { chunky, colors, outlined } from '../theme';
+import { chunky, colors, outlined, fonts } from '../theme';
 import type { IconName } from '../shared/ui';
 
 type PowerButtonProps = {
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
         gap: 4,
     },
     pressed: { ...outlined, marginTop: 3 },
-    label: { fontSize: 13, fontWeight: '800', color: colors.ink },
+    label: { fontSize: 13, fontFamily: fonts.heavy, color: colors.ink },
     badge: {
         position: 'absolute',
         top: -9,
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    badgeText: { fontSize: 12, fontWeight: '800', color: colors.white },
+    badgeText: { fontSize: 12, fontFamily: fonts.heavy, color: colors.white },
     price: { backgroundColor: colors.coin, ...outlined },
     priceText: { color: colors.ink, fontSize: 11 },
 });

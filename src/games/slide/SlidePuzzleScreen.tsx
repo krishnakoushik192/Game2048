@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
-import { chunky, colors, gameColors, outlined } from '../../theme';
+import { chunky, colors, gameColors, outlined, fonts } from '../../theme';
 import { GameShell, useBoardSize } from '../../shared/GameShell';
 import { Segmented, StatChip } from '../../shared/ui';
 import { ResultModal } from '../../shared/ResultModal';
@@ -143,12 +143,12 @@ const styles = StyleSheet.create({
         padding: 10,
     },
     tile: { borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-    tileText: { fontWeight: '800', color: colors.ink },
+    tileText: { fontFamily: fonts.display, color: colors.ink },
     gap: { borderRadius: 14, borderWidth: 2, borderStyle: 'dashed', borderColor: 'rgba(43,33,64,0.3)' },
     legend: { flexDirection: 'row', alignItems: 'center', gap: 12 },
     legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
     swatch: { width: 18, height: 18, borderRadius: 6, ...outlined, backgroundColor: colors.card },
-    legendText: { fontSize: 14, fontWeight: '700', color: colors.ink },
+    legendText: { fontSize: 14, fontFamily: fonts.bold, color: colors.ink },
     count: { marginLeft: 'auto' },
-    hint: { fontSize: 14, fontWeight: '700', color: colors.muted, textAlign: 'center' },
+    hint: { fontSize: 14, fontFamily: fonts.bold, color: colors.muted, textAlign: 'center' },
 });

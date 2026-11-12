@@ -23,7 +23,7 @@ import { GameShell } from './shared/GameShell';
 import { Banner, ChunkyButton } from './shared/ui';
 import { ResultModal } from './shared/ResultModal';
 import type { ResultInfo } from './shared/ResultModal';
-import { chunky, colors, gameColors, outlined, radius } from './theme';
+import { chunky, colors, gameColors, outlined, radius, fonts } from './theme';
 
 const GRID_SIZE = 4;
 const BOARD_BORDER = 2;
@@ -666,9 +666,9 @@ const styles = StyleSheet.create({
     row: { flexDirection: 'row', gap: 10 },
     footerRow: { flexDirection: 'row', gap: 10 },
     chip: { flex: 1, borderRadius: 16, ...outlined, paddingVertical: 6, paddingHorizontal: 10 },
-    chipLabel: { fontSize: 12, fontWeight: '800' },
-    chipValue: { fontSize: 22, fontWeight: '800', color: colors.ink },
-    added: { position: 'absolute', right: 8, top: 4, fontSize: 15, fontWeight: '800', color: colors.ink },
+    chipLabel: { fontSize: 12, fontFamily: fonts.heavy },
+    chipValue: { fontSize: 22, fontFamily: fonts.display, color: colors.ink },
+    added: { position: 'absolute', right: 8, top: 4, fontSize: 15, fontFamily: fonts.heavy, color: colors.ink },
     board: {
         alignSelf: 'center',
         width: BOARD_WIDTH,
@@ -688,10 +688,10 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     travel: { position: 'absolute', margin: 0, borderColor: colors.ink, zIndex: 10 },
-    tileText: { fontWeight: '800' },
+    tileText: { fontFamily: fonts.display },
     powers: { flexDirection: 'row', gap: 10, paddingTop: 6 },
-    bannerText: { flex: 1, fontSize: 14, fontWeight: '800', color: colors.ink },
-    cancel: { fontSize: 14, fontWeight: '800', color: colors.ink, textDecorationLine: 'underline' },
+    bannerText: { flex: 1, fontSize: 14, fontFamily: fonts.heavy, color: colors.ink },
+    cancel: { fontSize: 14, fontFamily: fonts.heavy, color: colors.ink, textDecorationLine: 'underline' },
     countdown: {
         width: 34,
         height: 34,
@@ -702,8 +702,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    countdownText: { fontSize: 15, fontWeight: '800', color: colors.ink },
-    hint: { fontSize: 14, fontWeight: '700', color: colors.muted, textAlign: 'center' },
+    countdownText: { fontSize: 15, fontFamily: fonts.display, color: colors.ink },
+    hint: { fontSize: 14, fontFamily: fonts.bold, color: colors.muted, textAlign: 'center' },
     bannerLayer: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center', zIndex: 20 },
     highScore: {
         alignItems: 'center',
@@ -714,7 +714,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 32,
         paddingVertical: 22,
     },
-    highScoreText: { fontSize: 26, fontWeight: '800', color: colors.ink },
+    highScoreText: { fontSize: 26, fontFamily: fonts.display, color: colors.ink },
     backdrop: { flex: 1, backgroundColor: 'rgba(43,33,64,0.55)', justifyContent: 'center', padding: 24 },
     dialog: {
         backgroundColor: colors.cream,
@@ -732,8 +732,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    dialogTitle: { fontSize: 24, fontWeight: '800', color: colors.ink, textAlign: 'center' },
-    dialogBody: { fontSize: 15, fontWeight: '700', color: colors.muted, textAlign: 'center' },
+    dialogTitle: { fontSize: 24, fontFamily: fonts.display, color: colors.ink, textAlign: 'center' },
+    dialogBody: { fontSize: 15, fontFamily: fonts.bold, color: colors.muted, textAlign: 'center' },
     dialogActions: { alignSelf: 'stretch', gap: 10, marginTop: 6 },
     shopRow: {
         flexDirection: 'row',
@@ -745,8 +745,8 @@ const styles = StyleSheet.create({
         padding: 10,
     },
     shopIcon: { width: 40, height: 40, borderRadius: 12, ...outlined, alignItems: 'center', justifyContent: 'center' },
-    shopName: { fontSize: 15, fontWeight: '800', color: colors.ink },
-    shopDesc: { fontSize: 12, fontWeight: '700', color: colors.muted },
+    shopName: { fontSize: 15, fontFamily: fonts.display, color: colors.ink },
+    shopDesc: { fontSize: 12, fontFamily: fonts.bold, color: colors.muted },
 });
 
 export default MainView;

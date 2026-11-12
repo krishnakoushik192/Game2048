@@ -51,9 +51,20 @@ export const chunky = (depth = 4): ViewStyle => ({
 
 export const outlined: ViewStyle = { borderWidth: 2, borderColor: colors.ink };
 
+/**
+ * Bundled font files (assets/fonts, also copied into the Android and iOS
+ * projects), so text looks the same offline on every phone. Each weight is
+ * its own family: never combine these with fontWeight, or Android may fake
+ * a bold on top.
+ */
 export const fonts = {
-    // Fredoka / Nunito are the design fonts; until they are bundled as native
-    // assets we fall back to the system font at heavy weights.
-    display: { fontWeight: '800' as const },
-    body: { fontWeight: '700' as const },
+    /** Fredoka: titles, scores and numbers on tiles. */
+    display: 'Fredoka-Bold',
+    displaySemi: 'Fredoka-SemiBold',
+    displayMedium: 'Fredoka-Medium',
+    /** Nunito: everything people read. */
+    heavy: 'Nunito-ExtraBold',
+    bold: 'Nunito-Bold',
+    semi: 'Nunito-SemiBold',
+    regular: 'Nunito-Regular',
 };

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, gameColors, outlined } from '../../theme';
+import { colors, gameColors, outlined, fonts } from '../../theme';
 import { GameShell, useBoardSize } from '../../shared/GameShell';
 import { Banner, ChunkyButton, Segmented, StatChip } from '../../shared/ui';
 import { usePlaybox } from '../../shared/playbox';
@@ -175,6 +175,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    mark: { fontWeight: '800' },
-    status: { flex: 1, fontSize: 16, fontWeight: '800', color: colors.ink },
+    mark: { fontFamily: fonts.display },
+    status: { flex: 1, fontSize: 16, fontFamily: fonts.heavy, color: colors.ink },
 });

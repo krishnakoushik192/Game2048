@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Lucide } from '@react-native-vector-icons/lucide/static';
-import { colors, gameColors, outlined } from '../../theme';
+import { colors, gameColors, outlined, fonts } from '../../theme';
 import { GameShell, useBoardSize } from '../../shared/GameShell';
 import { ChunkyButton, Segmented, StatChip } from '../../shared/ui';
 import { ResultModal } from '../../shared/ResultModal';
@@ -203,8 +203,8 @@ const styles = StyleSheet.create({
     },
     cell: { borderRadius: 6, alignItems: 'center', justifyContent: 'center' },
     raised: { borderBottomWidth: 3, borderBottomColor: 'rgba(43,33,64,0.25)' },
-    number: { fontWeight: '800' },
-    hint: { fontSize: 14, fontWeight: '700', color: colors.muted, textAlign: 'center' },
+    number: { fontFamily: fonts.display },
+    hint: { fontSize: 14, fontFamily: fonts.bold, color: colors.muted, textAlign: 'center' },
     footerRow: { flexDirection: 'row', gap: 10, alignItems: 'center' },
     flex: { flex: 1 },
 });
