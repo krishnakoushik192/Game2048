@@ -49,11 +49,12 @@ const PowerButton = ({ onPress, active, color, label, icon, uses, showTimer, tim
                     />
                 )}
                 <View className="rounded-full" style={{
-                    borderWidth: 1,
-                    backgroundColor: `${color}24`,
+                    // Active power: thicker ring and stronger fill so it is obvious it is armed.
+                    borderWidth: active ? 3 : 1,
+                    backgroundColor: active ? `${color}66` : `${color}24`,
                     borderColor: color,
-                    paddingVertical: 15,
-                    paddingHorizontal: 15,
+                    paddingVertical: active ? 13 : 15,
+                    paddingHorizontal: active ? 13 : 15,
                 }}>
                     <Lucide name={icon} size={24} color={color} />
                 </View>

@@ -16,6 +16,7 @@ import type { MergeAnimation, PowerMode, PowerPurchaseKind } from './MianViewMod
 import Footer from './components/Footer';
 import PowerButton from './components/PowerButton';
 import { startBackgroundMusic, stopBackgroundMusic } from './audio';
+import { usePlaybox } from './shared/playbox';
 import { FontAwesome6 } from '@react-native-vector-icons/fontawesome6/static';
 import { Lucide } from '@react-native-vector-icons/lucide/static';
 
@@ -83,12 +84,6 @@ function getCellOffset({ row, col }: { row: number; col: number }) {
     };
 }
 
-const PRO_TIPS = [
-    'Keep your highest number in a corner and try not to move it. This makes it easier to chain combos together.',
-    'Try to keep your tiles organized in a snake pattern for better control of the board.',
-    'Focus on building one big tile rather than spreading values across the board.',
-    'Think two moves ahead. Consider where new tiles might appear after your swipe.',
-];
 
 /* ─── Tile ─── */
 function Tile({
@@ -772,42 +767,6 @@ function MergeExample({
     );
 }
 
-/* ─── Pro Tip Card ─── */
-function ProTipCard() {
-    const [tipIndex, setTipIndex] = useState(0);
-    const fadeAnim = useRef(new Animated.Value(1)).current;
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            Animated.timing(fadeAnim, {
-                toValue: 0,
-                duration: 300,
-                useNativeDriver: true,
-            }).start(() => {
-                setTipIndex(prev => (prev + 1) % PRO_TIPS.length);
-                Animated.timing(fadeAnim, {
-                    toValue: 1,
-                    duration: 400,
-                    useNativeDriver: true,
-                }).start();
-            });
-        }, 8000);
-        return () => clearInterval(interval);
-    }, [fadeAnim]);
-
-    return (
-        <View className="mt-3.5 w-full max-w-[400px] rounded-[14px] border border-[rgba(255,255,255,0.10)] bg-[rgba(255,255,255,0.05)] p-4">
-            <View className="mb-2 flex-row items-center justify-between">
-                <Text className="text-[15px] font-extrabold italic text-[#ff2d78]">Pro Tip</Text>
-                <View className="h-4 w-4 rounded-full border-2 border-[rgba(255,255,255,0.15)]" />
-            </View>
-            <Animated.Text className="text-[13px] leading-[19px] text-[rgba(255,255,255,0.7)]" style={{ opacity: fadeAnim }}>
-                {PRO_TIPS[tipIndex]}
-            </Animated.Text>
-        </View>
-    );
-}
-
 /* ─── Tutorial / Onboarding Overlay ─── */
 export function TutorialOverlay({
     visible,
@@ -980,7 +939,7 @@ export function TutorialOverlay({
 const MainView = () => {
     const navigation = useNavigation<any>();
     const [showResetConfirmModal, setShowResetConfirmModal] = useState(false);
-    const [soundEnabled, setSoundEnabled] = useState(true);
+    const { soundEnabled, toggleSound } = usePlaybox();
     const [powerTimeLeft, setPowerTimeLeft] = useState(5);
     const powerTimerProgress = useRef(new Animated.Value(1)).current;
     const {
@@ -1089,10 +1048,20 @@ const MainView = () => {
             {/* Header */}
             <View className="mb-2 w-full">
                 <View className="mb-3 flex-row items-center justify-between">
-                    <Text className="text-5xl font-black tracking-[2px] text-[#00e5ff]">2048</Text>
                     <View className="flex-row items-center gap-3">
                         <Pressable
-                            onPress={() => setSoundEnabled(prev => !prev)}
+                            onPress={() => navigation.goBack()}
+                            className="items-center justify-center rounded-full border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.07)]"
+                            style={({ pressed }) => [{ width: 42, height: 42 }, pressed && { opacity: 0.72 }]}
+                            accessibilityRole="button"
+                            accessibilityLabel="Back to home">
+                            <Lucide name="chevron-left" size={22} color={COLORS.white} />
+                        </Pressable>
+                        <Text className="text-5xl font-black tracking-[2px] text-[#00e5ff]">2048</Text>
+                    </View>
+                    <View className="flex-row items-center gap-3">
+                        <Pressable
+                            onPress={toggleSound}
                             className="items-center justify-center rounded-full border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.07)]"
                             style={({ pressed }) => [
                                 {

@@ -382,7 +382,8 @@ export default function TutorialView({ navigation, route }: Props) {
         } catch {
             // The tutorial should never block play because persistence failed.
         }
-        navigation.replace('Game');
+        // Land in 2048 with the new home hub underneath, so Back goes Home.
+        navigation.reset({ index: 1, routes: [{ name: 'Home' }, { name: 'Game' }] });
     }, [clearAutoAdvance, navigation]);
 
     const goBack = useCallback(() => {

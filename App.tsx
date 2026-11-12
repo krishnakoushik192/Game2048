@@ -11,10 +11,40 @@ import {
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import MainView from './src/MainView';
 import TutorialView from './src/TutorialView';
+import HomeScreen from './src/HomeScreen';
+import TicTacToeScreen from './src/games/tictactoe/TicTacToeScreen';
+import MemoryScreen from './src/games/memory/MemoryScreen';
+import ColorRecallScreen from './src/games/colorRecall/ColorRecallScreen';
+import SlidePuzzleScreen from './src/games/slide/SlidePuzzleScreen';
+import DropFourScreen from './src/games/dropFour/DropFourScreen';
+import SnakeScreen from './src/games/snake/SnakeScreen';
+import MineFinderScreen from './src/games/mines/MineFinderScreen';
+import { PlayboxProvider } from './src/shared/playbox';
+import { colors } from './src/theme';
 import { RootStackParamList, TUTORIAL_SEEN_KEY } from './src/navigation';
 
-const BG = '#080c18';
+const LEGACY_BG = '#080c18';
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
+/**
+ * 2048 and its tutorial still use the dark look and expect the safe area to be
+ * handled for them. The new screens handle their own insets.
+ */
+function withLegacyFrame<P extends object>(Screen: React.ComponentType<P>) {
+  return function LegacyScreen(props: P) {
+    return (
+      <SafeAreaView
+        className="flex-1 border-t-2 border-r-2 border-l-2 border-[rgba(0,100,255,0.25)] bg-[#080c18]"
+        edges={['top', 'bottom']}>
+        <StatusBar barStyle="light-content" backgroundColor={LEGACY_BG} />
+        <Screen {...props} />
+      </SafeAreaView>
+    );
+  };
+}
+
+const LegacyGame = withLegacyFrame(MainView);
+const LegacyTutorial = withLegacyFrame(TutorialView);
 
 function App() {
   const [initialRoute, setInitialRoute] = useState<keyof RootStackParamList | null>(null);
@@ -23,7 +53,7 @@ function App() {
     const loadInitialRoute = async () => {
       try {
         const seen = await AsyncStorage.getItem(TUTORIAL_SEEN_KEY);
-        setInitialRoute(seen === 'true' ? 'Game' : 'Tutorial');
+        setInitialRoute(seen === 'true' ? 'Home' : 'Tutorial');
       } catch {
         setInitialRoute('Tutorial');
       }
@@ -33,30 +63,31 @@ function App() {
   }, []);
 
   return (
-    <GestureHandlerRootView className="flex-1 bg-[#080c18]">
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.cream }}>
       <SafeAreaProvider>
-        <StatusBar
-          barStyle="light-content"
-          backgroundColor={BG}
-          translucent={false}
-        />
-        <SafeAreaView
-          className="flex-1 border-t-2 border-r-2 border-l-2 border-[rgba(0,100,255,0.25)] bg-[#080c18]"
-          edges={['top', 'bottom']}>
+        <PlayboxProvider>
           {initialRoute && (
             <NavigationContainer>
               <Stack.Navigator
                 initialRouteName={initialRoute}
                 screenOptions={{
                   headerShown: false,
-                  contentStyle: { backgroundColor: BG },
+                  contentStyle: { backgroundColor: colors.cream },
                 }}>
-                <Stack.Screen name="Tutorial" component={TutorialView} />
-                <Stack.Screen name="Game" component={MainView} />
+                <Stack.Screen name="Home" component={HomeScreen} />
+                <Stack.Screen name="Tutorial" component={LegacyTutorial} />
+                <Stack.Screen name="Game" component={LegacyGame} />
+                <Stack.Screen name="TicTacToe" component={TicTacToeScreen} />
+                <Stack.Screen name="Memory" component={MemoryScreen} />
+                <Stack.Screen name="ColorRecall" component={ColorRecallScreen} />
+                <Stack.Screen name="SlidePuzzle" component={SlidePuzzleScreen} />
+                <Stack.Screen name="DropFour" component={DropFourScreen} />
+                <Stack.Screen name="Snake" component={SnakeScreen} />
+                <Stack.Screen name="MineFinder" component={MineFinderScreen} />
               </Stack.Navigator>
             </NavigationContainer>
           )}
-        </SafeAreaView>
+        </PlayboxProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
