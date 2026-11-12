@@ -22,7 +22,7 @@ const Footer = ({ canUndo, onUndo, onRetry, onHelp, onShop }: FooterProps) => {
 
     return (
         <View
-            className="mt-3 flex-row items-center justify-around rounded-t-[14px] border-t border-[rgba(126,205,255,0.18)] bg-[rgba(5,14,28,0.96)] px-4 pb-3.5 pt-3.5"
+            className="mt-3 flex-row items-center justify-around rounded-t-2xl border-t-2 border-r-2 border-l-2 border-[rgba(0,100,255,0.25)] bg-[rgba(5,14,28,0.96)] px-4 pb-3.5 pt-3.5"
             style={{
                 width: SCREEN_WIDTH,
             }}>

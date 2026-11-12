@@ -1,22 +1,31 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Directions, Gesture } from 'react-native-gesture-handler';
+import { playMoveEffect } from './audio';
 
 type Direction = 'left' | 'right' | 'up' | 'down';
 type MergePosition = { row: number; col: number };
+export type MergeAnimation = {
+    id: string;
+    value: number;
+    from: [MergePosition, MergePosition];
+    to: MergePosition;
+};
 export type PowerMode = 'destroy' | 'blast' | null;
 export type PowerKind = 'destroy' | 'blast';
 export type PowerPurchaseKind = PowerKind | 'shop';
 
 const GRID_SIZE = 4;
-const SCORE_STORAGE_KEY = '@game2048_score';
 const BEST_SCORE_STORAGE_KEY = '@game2048_best_score';
 const COINS_STORAGE_KEY = '@game2048_coins';
+const FREE_COINS_GRANTED_STORAGE_KEY = '@game2048_free_coins_granted';
 const DESTROY_POWER_STORAGE_KEY = '@game2048_destroy_power';
 const BLAST_POWER_STORAGE_KEY = '@game2048_blast_power';
 const INITIAL_POWER_USES = 3;
 const DESTROY_POWER_COST = 50;
 const BLAST_POWER_COST = 100;
+const FREE_STARTER_COINS = 50;
+const GAME_OVER_POWER_GRACE_MS = 5000;
 const INITIAL_BOARD: number[][] = Array.from({ length: GRID_SIZE }, () =>
     Array(GRID_SIZE).fill(0),
 );
@@ -37,7 +46,7 @@ const calculateMergeCoinsForValue = (tileValue: number) => {
     return 0;
 };
 
-export const useMainViewModel = () => {
+export const useMainViewModel = ({ soundEnabled = true }: { soundEnabled?: boolean } = {}) => {
     const transpose = useCallback((grid: number[][]) => {
         return grid[0].map((_, colIndex) => grid.map(row => row[colIndex]));
     }, []);
@@ -190,6 +199,63 @@ export const useMainViewModel = () => {
         return grid.some(row => row.some(value => value > 0));
     }, []);
 
+    const collectMergeAnimations = useCallback((grid: number[][], direction: Direction) => {
+        const animations: MergeAnimation[] = [];
+        const collectLine = (
+            values: number[],
+            positions: MergePosition[],
+            lineId: string,
+        ) => {
+            const entries = values
+                .map((value, index) => ({ value, position: positions[index] }))
+                .filter(entry => entry.value > 0);
+            let targetIndex = 0;
+
+            for (let index = 0; index < entries.length; index += 1) {
+                const current = entries[index];
+                const next = entries[index + 1];
+                if (next && current.value === next.value) {
+                    const to = positions[targetIndex];
+                    animations.push({
+                        id: `${lineId}-${targetIndex}`,
+                        value: current.value,
+                        from: [current.position, next.position],
+                        to,
+                    });
+                    index += 1;
+                }
+                targetIndex += 1;
+            }
+        };
+
+        if (direction === 'left' || direction === 'right') {
+            for (let row = 0; row < GRID_SIZE; row += 1) {
+                const cols = direction === 'left'
+                    ? [0, 1, 2, 3]
+                    : [3, 2, 1, 0];
+                collectLine(
+                    cols.map(col => grid[row][col]),
+                    cols.map(col => ({ row, col })),
+                    `${direction}-${row}`,
+                );
+            }
+            return animations;
+        }
+
+        for (let col = 0; col < GRID_SIZE; col += 1) {
+            const rows = direction === 'up'
+                ? [0, 1, 2, 3]
+                : [3, 2, 1, 0];
+            collectLine(
+                rows.map(row => grid[row][col]),
+                rows.map(row => ({ row, col })),
+                `${direction}-${col}`,
+            );
+        }
+
+        return animations;
+    }, []);
+
     const countTiles = useCallback((grid: number[][]) => {
         return grid.reduce((total, row) => total + row.filter(value => value > 0).length, 0);
     }, []);
@@ -197,7 +263,6 @@ export const useMainViewModel = () => {
     const initial = useMemo(() => initializeBoard(), [initializeBoard]);
     const [board, setBoard] = useState<number[][]>(initial.board);
     const [score, setScore] = useState(0);
-    const [isScoreLoaded, setIsScoreLoaded] = useState(false);
     const [bestScore, setBestScore] = useState(0);
     const [isBestScoreLoaded, setIsBestScoreLoaded] = useState(false);
     const [coins, setCoins] = useState(0);
@@ -217,6 +282,7 @@ export const useMainViewModel = () => {
     const gameOverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const prevBestScoreRef = useRef(0);
     const [mergedCells, setMergedCells] = useState<string[]>([]);
+    const [mergeAnimations, setMergeAnimations] = useState<MergeAnimation[]>([]);
     const [newTileCells, setNewTileCells] = useState<string[]>(initial.newTiles);
     const [mergeAnimationTick, setMergeAnimationTick] = useState(0);
     const [spawnAnimationTick, setSpawnAnimationTick] = useState(0);
@@ -241,27 +307,6 @@ export const useMainViewModel = () => {
     useEffect(() => { blastUsesRef.current = blastUses; }, [blastUses]);
 
     useEffect(() => {
-        const loadScore = async () => {
-            try {
-                const storedValue = await AsyncStorage.getItem(SCORE_STORAGE_KEY);
-                if (storedValue == null) {
-                    setIsScoreLoaded(true);
-                    return;
-                }
-                const parsed = Number(storedValue);
-                if (!Number.isNaN(parsed) && parsed >= 0) {
-                    setScore(parsed);
-                }
-                setIsScoreLoaded(true);
-            } catch (error) {
-                console.warn('Failed to load score', error);
-                setIsScoreLoaded(true);
-            }
-        };
-        loadScore();
-    }, []);
-
-    useEffect(() => {
         const loadBestScore = async () => {
             try {
                 const storedValue = await AsyncStorage.getItem(BEST_SCORE_STORAGE_KEY);
@@ -284,26 +329,31 @@ export const useMainViewModel = () => {
     }, []);
 
     useEffect(() => {
-        if (!isScoreLoaded) { return; }
-        AsyncStorage.setItem(SCORE_STORAGE_KEY, String(score)).catch(error => {
-            console.warn('Failed to save score', error);
-        });
-    }, [score, isScoreLoaded]);
-
-    useEffect(() => {
         const loadPowerState = async () => {
             try {
-                const [storedCoins, storedDestroyUses, storedBlastUses] = await Promise.all([
+                const [storedCoins, storedFreeCoinsGranted, storedDestroyUses, storedBlastUses] = await Promise.all([
                     AsyncStorage.getItem(COINS_STORAGE_KEY),
+                    AsyncStorage.getItem(FREE_COINS_GRANTED_STORAGE_KEY),
                     AsyncStorage.getItem(DESTROY_POWER_STORAGE_KEY),
                     AsyncStorage.getItem(BLAST_POWER_STORAGE_KEY),
                 ]);
                 const parsedCoins = Number(storedCoins);
                 const parsedDestroyUses = Number(storedDestroyUses);
                 const parsedBlastUses = Number(storedBlastUses);
-                if (storedCoins != null && !Number.isNaN(parsedCoins) && parsedCoins >= 0) {
-                    setCoins(parsedCoins);
+                let nextCoins = storedCoins != null && !Number.isNaN(parsedCoins) && parsedCoins >= 0
+                    ? parsedCoins
+                    : 0;
+
+                if (storedFreeCoinsGranted !== 'true') {
+                    nextCoins += FREE_STARTER_COINS;
+                    setCoinsAdded(FREE_STARTER_COINS);
+                    setCoinsBumpTick(prev => prev + 1);
+                    AsyncStorage.setItem(FREE_COINS_GRANTED_STORAGE_KEY, 'true').catch(error => {
+                        console.warn('Failed to save starter coins grant', error);
+                    });
                 }
+
+                setCoins(nextCoins);
                 if (storedDestroyUses != null && !Number.isNaN(parsedDestroyUses) && parsedDestroyUses >= 0) {
                     setDestroyUses(parsedDestroyUses);
                 }
@@ -354,11 +404,11 @@ export const useMainViewModel = () => {
             gameOverTimerRef.current = setTimeout(() => {
                 setShowHighScoreAnimation(false);
                 setShowGameOverModal(true);
-            }, 3000);
+            }, GAME_OVER_POWER_GRACE_MS);
         } else {
             gameOverTimerRef.current = setTimeout(() => {
                 setShowGameOverModal(true);
-            }, 2000);
+            }, GAME_OVER_POWER_GRACE_MS);
         }
         return () => {
             if (gameOverTimerRef.current) {
@@ -431,9 +481,13 @@ export const useMainViewModel = () => {
                     return currentBoard;
                 }
 
+                if (soundEnabled) {
+                    playMoveEffect();
+                }
                 pushHistorySnapshot(currentBoard);
 
                 setMergedCells(mergedPositions.map(({ row, col }) => `${row}-${col}`));
+                setMergeAnimations(collectMergeAnimations(currentBoard, direction));
                 setMergeAnimationTick(prevTick => prevTick + 1);
 
                 const result = addRandomTile(movedBoard);
@@ -481,6 +535,7 @@ export const useMainViewModel = () => {
         [
             addRandomTile,
             activePowerMode,
+            collectMergeAnimations,
             hasMovesAvailable,
             hasReached2048,
             hasWon,
@@ -492,6 +547,7 @@ export const useMainViewModel = () => {
             moveRight,
             moveUp,
             pushHistorySnapshot,
+            soundEnabled,
         ],
     );
 
@@ -505,6 +561,7 @@ export const useMainViewModel = () => {
         setBlastUses(last.blastUses);
         setHistory(prev => prev.slice(0, -1));
         setMergedCells([]);
+        setMergeAnimations([]);
         setNewTileCells([]);
         setPowerActionCells([]);
         setActivePowerMode(null);
@@ -517,25 +574,25 @@ export const useMainViewModel = () => {
     }, [powerActionCells.length]);
 
     const activateDestroyMode = useCallback(() => {
-        if (isGameOver || powerActionCells.length > 0 || !hasTiles(board)) { return; }
+        if ((isGameOver && showGameOverModal) || powerActionCells.length > 0 || !hasTiles(board)) { return; }
         if (destroyUses <= 0) {
             setPendingPurchasePower('destroy');
             return;
         }
         setActivePowerMode(prev => (prev === 'destroy' ? null : 'destroy'));
-    }, [board, destroyUses, hasTiles, isGameOver, powerActionCells.length]);
+    }, [board, destroyUses, hasTiles, isGameOver, powerActionCells.length, showGameOverModal]);
 
     const activateBlastMode = useCallback(() => {
-        if (isGameOver || powerActionCells.length > 0 || !hasTiles(board)) { return; }
+        if ((isGameOver && showGameOverModal) || powerActionCells.length > 0 || !hasTiles(board)) { return; }
         if (blastUses <= 0) {
             setPendingPurchasePower('blast');
             return;
         }
         setActivePowerMode(prev => (prev === 'blast' ? null : 'blast'));
-    }, [blastUses, board, hasTiles, isGameOver, powerActionCells.length]);
+    }, [blastUses, board, hasTiles, isGameOver, powerActionCells.length, showGameOverModal]);
 
     const destroyTile = useCallback((row: number, col: number) => {
-        if (activePowerMode !== 'destroy' || isGameOver || powerActionCells.length > 0) { return; }
+        if (activePowerMode !== 'destroy' || (isGameOver && showGameOverModal) || powerActionCells.length > 0) { return; }
         const value = board[row]?.[col] ?? 0;
         if (value <= 0) { return; }
         if (countTiles(board) <= 1) { return; }
@@ -553,10 +610,10 @@ export const useMainViewModel = () => {
             setIsGameOver(false);
             setShowGameOverModal(false);
         }, 260);
-    }, [activePowerMode, board, countTiles, isGameOver, powerActionCells.length, pushHistorySnapshot]);
+    }, [activePowerMode, board, countTiles, isGameOver, powerActionCells.length, pushHistorySnapshot, showGameOverModal]);
 
     const blastNumber = useCallback((value: number) => {
-        if (activePowerMode !== 'blast' || isGameOver || powerActionCells.length > 0 || value <= 0) { return; }
+        if (activePowerMode !== 'blast' || (isGameOver && showGameOverModal) || powerActionCells.length > 0 || value <= 0) { return; }
         const matchingCells: string[] = [];
         board.forEach((boardRow, rowIndex) => {
             boardRow.forEach((cell, colIndex) => {
@@ -580,7 +637,7 @@ export const useMainViewModel = () => {
             setIsGameOver(false);
             setShowGameOverModal(false);
         }, 320);
-    }, [activePowerMode, board, countTiles, isGameOver, powerActionCells.length, pushHistorySnapshot]);
+    }, [activePowerMode, board, countTiles, isGameOver, powerActionCells.length, pushHistorySnapshot, showGameOverModal]);
 
     const selectPowerTile = useCallback((row: number, col: number) => {
         if (activePowerMode === 'destroy') {
@@ -673,6 +730,7 @@ export const useMainViewModel = () => {
         setSpawnAnimationTick(prev => prev + 1);
         setScore(0);
         setMergedCells([]);
+        setMergeAnimations([]);
         setMergeAnimationTick(0);
         setHistory([]);
         setIsGameOver(false);
@@ -706,9 +764,11 @@ export const useMainViewModel = () => {
         scoreAdded,
         scoreBumpTick,
         showHighScoreAnimation,
+        isGameOver,
         showGameOverModal,
         showWinModal,
         mergedCells,
+        mergeAnimations,
         newTileCells,
         powerActionCells,
         powerAnimationTick,

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
+    AppState,
     Animated,
     Dimensions,
     Easing,
@@ -11,9 +12,10 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import { useMainViewModel } from './MianViewModel';
-import type { PowerMode, PowerPurchaseKind } from './MianViewModel';
+import type { MergeAnimation, PowerMode, PowerPurchaseKind } from './MianViewModel';
 import Footer from './components/Footer';
 import PowerButton from './components/PowerButton';
+import { startBackgroundMusic, stopBackgroundMusic } from './audio';
 import { FontAwesome6 } from '@react-native-vector-icons/fontawesome6/static';
 import { Lucide } from '@react-native-vector-icons/lucide/static';
 
@@ -74,6 +76,13 @@ function getTileFontSize(value: number) {
     return TILE_SIZE * 0.18;
 }
 
+function getCellOffset({ row, col }: { row: number; col: number }) {
+    return {
+        left: BOARD_PADDING + col * (TILE_SIZE + TILE_MARGIN * 2) + TILE_MARGIN,
+        top: BOARD_PADDING + row * (TILE_SIZE + TILE_MARGIN * 2) + TILE_MARGIN,
+    };
+}
+
 const PRO_TIPS = [
     'Keep your highest number in a corner and try not to move it. This makes it easier to chain combos together.',
     'Try to keep your tiles organized in a snake pattern for better control of the board.',
@@ -106,29 +115,33 @@ function Tile({
     onPress: () => void;
 }) {
     const colors = getTileStyle(value);
-    const scale = useRef(new Animated.Value(1)).current;
+    const mergeScale = useRef(new Animated.Value(1)).current;
     const powerScale = useRef(new Animated.Value(1)).current;
     const powerOpacity = useRef(new Animated.Value(1)).current;
     const shake = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
         if (!isMerged || value === 0) { return; }
-        scale.setValue(1);
+        mergeScale.stopAnimation();
+        mergeScale.setValue(0.92);
         Animated.sequence([
-            Animated.timing(scale, {
-                toValue: 1.18,
-                duration: 80,
-                easing: Easing.out(Easing.quad),
+            Animated.delay(130),
+            Animated.spring(mergeScale, {
+                toValue: 1.08,
+                friction: 5,
+                tension: 170,
                 useNativeDriver: true,
             }),
-            Animated.timing(scale, {
-                toValue: 1,
-                duration: 100,
-                easing: Easing.in(Easing.quad),
-                useNativeDriver: true,
-            }),
+            Animated.sequence([
+                Animated.timing(mergeScale, {
+                    toValue: 1,
+                    duration: 80,
+                    easing: Easing.out(Easing.quad),
+                    useNativeDriver: true,
+                }),
+            ]),
         ]).start();
-    }, [isMerged, mergeAnimationTick, scale, value]);
+    }, [isMerged, mergeAnimationTick, mergeScale, value]);
 
     useEffect(() => {
         if (!isPowerAction || value === 0) { return; }
@@ -185,7 +198,7 @@ function Tile({
                     elevation: isSelectable ? 8 : 0,
                     transform: [
                         { translateX: isPowerAction ? shake : 0 },
-                        { scale: isPowerAction ? powerScale : isMerged && value > 0 ? scale : 1 },
+                        { scale: isPowerAction ? powerScale : value > 0 ? mergeScale : 1 },
                     ],
                 },
             ]}>
@@ -241,6 +254,115 @@ function Tile({
 }
 
 /* ─── High Score Banner ─── */
+function MergeTravelTile({
+    value,
+    from,
+    to,
+    tick,
+}: {
+    value: number;
+    from: { row: number; col: number };
+    to: { row: number; col: number };
+    tick: number;
+}) {
+    const progress = useRef(new Animated.Value(0)).current;
+    const opacity = useRef(new Animated.Value(1)).current;
+    const scale = useRef(new Animated.Value(1)).current;
+    const colors = getTileStyle(value);
+    const start = getCellOffset(from);
+    const end = getCellOffset(to);
+
+    useEffect(() => {
+        progress.setValue(0);
+        opacity.setValue(1);
+        scale.setValue(1);
+        Animated.parallel([
+            Animated.timing(progress, {
+                toValue: 1,
+                duration: 150,
+                easing: Easing.out(Easing.cubic),
+                useNativeDriver: true,
+            }),
+            Animated.sequence([
+                Animated.delay(95),
+                Animated.timing(opacity, {
+                    toValue: 0,
+                    duration: 85,
+                    easing: Easing.out(Easing.quad),
+                    useNativeDriver: true,
+                }),
+            ]),
+            Animated.sequence([
+                Animated.delay(80),
+                Animated.timing(scale, {
+                    toValue: 0.86,
+                    duration: 90,
+                    easing: Easing.out(Easing.quad),
+                    useNativeDriver: true,
+                }),
+            ]),
+        ]).start();
+    }, [opacity, progress, scale, tick]);
+
+    const translateX = progress.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, end.left - start.left],
+    });
+    const translateY = progress.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, end.top - start.top],
+    });
+
+    return (
+        <Animated.View
+            pointerEvents="none"
+            className="absolute z-10 items-center justify-center rounded-[10px]"
+            style={{
+                left: start.left,
+                top: start.top,
+                width: TILE_SIZE,
+                height: TILE_SIZE,
+                backgroundColor: colors.bg,
+                borderColor: colors.border,
+                borderWidth: 1.5,
+                opacity,
+                transform: [{ translateX }, { translateY }, { scale }],
+            }}>
+            <Text
+                className="font-extrabold"
+                style={{ color: colors.text, fontSize: getTileFontSize(value) }}
+                numberOfLines={1}
+                adjustsFontSizeToFit>
+                {value}
+            </Text>
+        </Animated.View>
+    );
+}
+
+function MergeTravelLayer({
+    animations,
+    tick,
+}: {
+    animations: MergeAnimation[];
+    tick: number;
+}) {
+    return (
+        <>
+            {animations.flatMap(animation =>
+                animation.from.map((from, sourceIndex) => (
+                    <MergeTravelTile
+                        key={`${tick}-${animation.id}-${sourceIndex}`}
+                        value={animation.value}
+                        from={from}
+                        to={animation.to}
+                        tick={tick}
+                    />
+                )),
+            )}
+        </>
+    );
+}
+
 function HighScoreBanner({ visible }: { visible: boolean }) {
     const scale = useRef(new Animated.Value(0)).current;
     const opacity = useRef(new Animated.Value(0)).current;
@@ -344,7 +466,7 @@ function ScoreBox({
     }, [scoreBumpTick, scoreAdded, bumpScale, addedOpacity, addedTranslateY]);
 
     return (
-        <View className="relative flex-1 items-center py-1 mt-12">
+        <View className="relative items-center py-3 mt-12 border-2 border-[rgba(0,100,255,0.25)] rounded-2xl px-7">
             <Text className="text-sm font-bold tracking-[2px]" style={{ color: labelColor }}>{label}</Text>
             <Animated.Text
                 className="mt-0 text-4xl font-extrabold text-white"
@@ -355,7 +477,7 @@ function ScoreBox({
             </Animated.Text>
             {showAdded && scoreAdded != null && scoreAdded > 0 && (
                 <Animated.Text
-                    className="absolute right-8 top-2 text-lg font-bold text-[#ff2d78]"
+                    className="absolute right-12 top-2 text-lg font-bold text-[#ff2d78]"
                     style={[
                         {
                             opacity: addedOpacity,
@@ -385,10 +507,10 @@ function CoinCounter({
 
     useEffect(() => {
         if (!coinsBumpTick || coinsAdded <= 0) { return; }
-        scale.setValue(1.16);
+        scale.setValue(1.25);
         Animated.timing(scale, {
             toValue: 1,
-            duration: 260,
+            duration: 300,
             easing: Easing.out(Easing.quad),
             useNativeDriver: true,
         }).start();
@@ -398,7 +520,7 @@ function CoinCounter({
         Animated.parallel([
             Animated.timing(addedOpacity, { toValue: 0, duration: 800, useNativeDriver: true }),
             Animated.timing(addedTranslateY, {
-                toValue: -24,
+                toValue: -28,
                 duration: 800,
                 easing: Easing.out(Easing.quad),
                 useNativeDriver: true,
@@ -426,7 +548,7 @@ function CoinCounter({
             </Animated.View>
             {showAdded && (
                 <Animated.Text
-                    className="absolute right-2 top-0 text-xs font-extrabold text-[#39ff14]"
+                    className="absolute right-12 top-2 text-lg font-bold text-[#ff2d78]"
                     style={{ opacity: addedOpacity, transform: [{ translateY: addedTranslateY }] }}>
                     +{coinsAdded}
                 </Animated.Text>
@@ -857,6 +979,10 @@ export function TutorialOverlay({
 /* ─── Main View ─── */
 const MainView = () => {
     const navigation = useNavigation<any>();
+    const [showResetConfirmModal, setShowResetConfirmModal] = useState(false);
+    const [soundEnabled, setSoundEnabled] = useState(true);
+    const [powerTimeLeft, setPowerTimeLeft] = useState(5);
+    const powerTimerProgress = useRef(new Animated.Value(1)).current;
     const {
         board,
         score,
@@ -874,9 +1000,11 @@ const MainView = () => {
         scoreAdded,
         scoreBumpTick,
         showHighScoreAnimation,
+        isGameOver,
         showGameOverModal,
         showWinModal,
         mergedCells,
+        mergeAnimations,
         newTileCells,
         powerActionCells,
         powerAnimationTick,
@@ -895,36 +1023,116 @@ const MainView = () => {
         buyBlastPower,
         closePowerModal,
         openPowerShop,
-    } = useMainViewModel();
+    } = useMainViewModel({ soundEnabled });
 
     const mergedCellSet = useMemo(() => new Set(mergedCells), [mergedCells]);
     const newTileCellSet = useMemo(() => new Set(newTileCells), [newTileCells]);
     const powerActionCellSet = useMemo(() => new Set(powerActionCells), [powerActionCells]);
+    const requestResetGame = () => setShowResetConfirmModal(true);
+    const confirmResetGame = () => {
+        setShowResetConfirmModal(false);
+        retryGame();
+    };
+    const cancelResetGame = () => setShowResetConfirmModal(false);
+    const showGameOverPowerTimer = isGameOver && !showGameOverModal;
+
+    useEffect(() => {
+        const syncBackgroundMusic = (appState: string) => {
+            if (soundEnabled && appState === 'active') {
+                startBackgroundMusic();
+            } else {
+                stopBackgroundMusic();
+            }
+        };
+
+        syncBackgroundMusic(AppState.currentState);
+        const subscription = AppState.addEventListener('change', syncBackgroundMusic);
+
+        return () => {
+            subscription.remove();
+            stopBackgroundMusic();
+        };
+    }, [soundEnabled]);
+
+    useEffect(() => {
+        if (!showGameOverPowerTimer) {
+            powerTimerProgress.stopAnimation();
+            powerTimerProgress.setValue(1);
+            setPowerTimeLeft(5);
+            return;
+        }
+
+        setPowerTimeLeft(5);
+        powerTimerProgress.setValue(1);
+        Animated.timing(powerTimerProgress, {
+            toValue: 0,
+            duration: 5000,
+            easing: Easing.linear,
+            useNativeDriver: true,
+        }).start();
+
+        const interval = setInterval(() => {
+            setPowerTimeLeft(prev => Math.max(0, prev - 1));
+        }, 1000);
+
+        return () => {
+            clearInterval(interval);
+            powerTimerProgress.stopAnimation();
+        };
+    }, [
+        showGameOverPowerTimer,
+        powerTimerProgress,
+    ]);
 
     return (
         <View className="flex-1 items-center justify-between bg-[#080c18] px-5 pt-4">
             {/* Header */}
-            <View className="mb-2 w-full max-w-[400px]">
+            <View className="mb-2 w-full">
                 <View className="mb-3 flex-row items-center justify-between">
                     <Text className="text-5xl font-black tracking-[2px] text-[#00e5ff]">2048</Text>
-                    <CoinCounter coins={coins} coinsAdded={coinsAdded} coinsBumpTick={coinsBumpTick} />
+                    <View className="flex-row items-center gap-3">
+                        <Pressable
+                            onPress={() => setSoundEnabled(prev => !prev)}
+                            className="items-center justify-center rounded-full border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.07)]"
+                            style={({ pressed }) => [
+                                {
+                                    width: 42,
+                                    height: 42,
+                                },
+                                pressed && { opacity: 0.72 },
+                            ]}
+                            accessibilityLabel={soundEnabled ? 'Turn sound off' : 'Turn sound on'}
+                            accessibilityRole="switch"
+                            accessibilityState={{ checked: soundEnabled }}>
+                            <Lucide
+                                name={soundEnabled ? 'volume-2' : 'volume-x'}
+                                size={22}
+                                color={soundEnabled ? COLORS.cyan : COLORS.dim}
+                            />
+                        </Pressable>
+                        <CoinCounter coins={coins} coinsAdded={coinsAdded} coinsBumpTick={coinsBumpTick} />
+                    </View>
                 </View>
 
-                <View className="flex-row justify-between">
-                    <ScoreBox
-                        label="SCORE"
-                        score={score}
-                        scoreAdded={scoreAdded}
-                        scoreBumpTick={scoreBumpTick}
-                    />
-                    <ScoreBox label="BEST" score={bestScore} />
+                <View className="flex-row justify-center">
+                    <View style={{ marginRight: 72 }}>
+                        <ScoreBox
+                            label="SCORE"
+                            score={score}
+                            scoreAdded={scoreAdded}
+                            scoreBumpTick={scoreBumpTick}
+                        />
+                    </View>
+                    <View>
+                        <ScoreBox label="BEST" score={bestScore} />
+                    </View>
                 </View>
             </View>
 
             {/* Game Board */}
             <GestureDetector gesture={gesture}>
                 <View
-                    className="rounded-[14px] border border-[rgba(255,255,255,0.06)] bg-[rgba(15,20,45,0.9)]"
+                    className="relative overflow-hidden rounded-[14px] border border-[rgba(255,255,255,0.06)] bg-[rgba(15,20,45,0.9)]"
                     style={{ width: BOARD_WIDTH, padding: BOARD_PADDING }}>
                     {board.map((row, rowIndex) => (
                         <View key={rowIndex} className="flex-row justify-center">
@@ -948,6 +1156,7 @@ const MainView = () => {
                             })}
                         </View>
                     ))}
+                    <MergeTravelLayer animations={mergeAnimations} tick={mergeAnimationTick} />
                 </View>
             </GestureDetector>
 
@@ -962,6 +1171,9 @@ const MainView = () => {
                             color={COLORS.magenta}
                             active={activePowerMode === 'destroy'}
                             onPress={activateDestroyMode}
+                            showTimer={showGameOverPowerTimer}
+                            timerProgress={powerTimerProgress}
+                            timerLabel={powerTimeLeft}
                         />
                     </View>
                     <View>
@@ -972,10 +1184,13 @@ const MainView = () => {
                             color={'#00e5ff'}
                             active={activePowerMode === 'blast'}
                             onPress={activateBlastMode}
+                            showTimer={showGameOverPowerTimer}
+                            timerProgress={powerTimerProgress}
+                            timerLabel={powerTimeLeft}
                         />
                     </View>
                 </View>
-                {activePowerMode && (
+                {activePowerMode && !showGameOverPowerTimer && (
                     <View className="mt-2 flex-row items-center gap-3">
                         <Text className="text-xs font-bold tracking-[1px]" style={{ color: activePowerMode === 'destroy' ? COLORS.pink : COLORS.cyan }}>
                             {activePowerMode === 'destroy' ? 'Select a tile to destroy' : 'Select a number to blast'}
@@ -990,7 +1205,7 @@ const MainView = () => {
             <Footer
                 canUndo={canUndo}
                 onUndo={undoMove}
-                onRetry={retryGame}
+                onRetry={requestResetGame}
                 onHelp={() => navigation.navigate('Tutorial', { startAtPractice: true })}
                 onShop={openPowerShop}
             />
@@ -1078,6 +1293,42 @@ const MainView = () => {
                             onPress={retryGame}>
                             <Text className="text-[15px] font-bold text-white">Try Again</Text>
                         </Pressable>
+                    </View>
+                </View>
+            </Modal>
+
+            <Modal
+                visible={showResetConfirmModal}
+                animationType="fade"
+                transparent
+                statusBarTranslucent
+                onRequestClose={cancelResetGame}>
+                <View className="flex-1 items-center justify-center bg-[rgba(8,12,24,0.88)] px-6">
+                    <View
+                        className="w-full max-w-[320px] items-center rounded-[20px] border border-[rgba(255,255,255,0.10)] bg-[rgba(20,25,50,0.95)] px-7 py-8"
+                        style={{
+                            elevation: 12,
+                            shadowColor: COLORS.pink,
+                            shadowOffset: { width: 0, height: 0 },
+                            shadowOpacity: 0.2,
+                            shadowRadius: 20,
+                        }}>
+                        <Text className="mb-2 text-3xl font-extrabold text-white">Reset game?</Text>
+                        <Text className="mb-5 text-center text-[15px] leading-5 text-[rgba(255,255,255,0.58)]">
+                            Your current board and undo history will be cleared.
+                        </Text>
+                        <View className="flex-row gap-3">
+                            <Pressable
+                                className="items-center rounded-xl border-[1.5px] border-[rgba(255,255,255,0.14)] px-5 py-3"
+                                onPress={cancelResetGame}>
+                                <Text className="text-[15px] font-bold text-white">Cancel</Text>
+                            </Pressable>
+                            <Pressable
+                                className="min-w-[120px] items-center rounded-xl bg-[#ff2d78] px-5 py-3"
+                                onPress={confirmResetGame}>
+                                <Text className="text-[15px] font-bold text-white">Reset</Text>
+                            </Pressable>
+                        </View>
                     </View>
                 </View>
             </Modal>

@@ -41,7 +41,7 @@ function App() {
           translucent={false}
         />
         <SafeAreaView
-          className="flex-1 border border-[rgba(0,100,255,0.25)] bg-[#080c18]"
+          className="flex-1 border-t-2 border-r-2 border-l-2 border-[rgba(0,100,255,0.25)] bg-[#080c18]"
           edges={['top', 'bottom']}>
           {initialRoute && (
             <NavigationContainer>

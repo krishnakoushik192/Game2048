@@ -8,6 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		0C80B921A6F3F58F76C31292 /* libPods-Game2048.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-Game2048.a */; };
+		A10000000000000000000001 /* GameAudio.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000005 /* GameAudio.swift */; };
+		A10000000000000000000002 /* GameAudioBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000006 /* GameAudioBridge.m */; };
+		A10000000000000000000003 /* background_song.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000007 /* background_song.mp3 */; };
+		A10000000000000000000004 /* move_effect.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000008 /* move_effect.mp3 */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
@@ -18,6 +22,10 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Game2048/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Game2048/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = Game2048/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		A10000000000000000000005 /* GameAudio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GameAudio.swift; path = Game2048/GameAudio.swift; sourceTree = "<group>"; };
+		A10000000000000000000006 /* GameAudioBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = GameAudioBridge.m; path = Game2048/GameAudioBridge.m; sourceTree = "<group>"; };
+		A10000000000000000000007 /* background_song.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = background_song.mp3; path = Game2048/Audio/background_song.mp3; sourceTree = "<group>"; };
+		A10000000000000000000008 /* move_effect.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = move_effect.mp3; path = Game2048/Audio/move_effect.mp3; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-Game2048.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Game2048.debug.xcconfig"; path = "Target Support Files/Pods-Game2048/Pods-Game2048.debug.xcconfig"; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-Game2048.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Game2048.release.xcconfig"; path = "Target Support Files/Pods-Game2048/Pods-Game2048.release.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-Game2048.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Game2048.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -43,6 +51,9 @@
 			children = (
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				761780EC2CA45674006654EE /* AppDelegate.swift */,
+				A10000000000000000000005 /* GameAudio.swift */,
+				A10000000000000000000006 /* GameAudioBridge.m */,
+				A10000000000000000000009 /* Audio */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
@@ -57,6 +68,15 @@
 				5DCACB8F33CDC322A6C60F78 /* libPods-Game2048.a */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000009 /* Audio */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000007 /* background_song.mp3 */,
+				A10000000000000000000008 /* move_effect.mp3 */,
+			);
+			name = Audio;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -158,6 +178,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
+				A10000000000000000000003 /* background_song.mp3 in Resources */,
+				A10000000000000000000004 /* move_effect.mp3 in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -245,6 +267,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
+				A10000000000000000000001 /* GameAudio.swift in Sources */,
+				A10000000000000000000002 /* GameAudioBridge.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
