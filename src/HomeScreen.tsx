@@ -39,6 +39,8 @@ const GAMES: GameEntry[] = [
 
 const DAILY_REWARD = 50;
 const DAILY_CLAIM_KEY = '@playbox_daily_claimed';
+/** Written by the 2048 view model. */
+const BEST_2048_KEY = '@game2048_best_score';
 
 /** Same challenge for everyone on a given day, rotating through the games. */
 export const dailyGameIndex = (date = new Date()) => {
@@ -51,6 +53,7 @@ export default function HomeScreen({ navigation }: Props) {
     const { coins, reloadCoins, addCoins, soundEnabled, toggleSound } = usePlaybox();
     const [stats, setStats] = useState<Partial<Record<GameId, GameStats>>>({});
     const [claimedToday, setClaimedToday] = useState(true);
+    const [best2048, setBest2048] = useState<number | null>(null);
     const today = todayKey();
     const daily = GAMES[dailyGameIndex()];
     const dailyDone = stats[daily.id]?.lastWinDate === today;
@@ -60,6 +63,9 @@ export default function HomeScreen({ navigation }: Props) {
         Promise.all(GAMES.map(game => loadStats(game.id))).then(all => {
             setStats(Object.fromEntries(GAMES.map((game, i) => [game.id, all[i]])));
         });
+        AsyncStorage.getItem(BEST_2048_KEY)
+            .then(value => setBest2048(value != null && Number(value) > 0 ? Number(value) : null))
+            .catch(() => undefined);
         AsyncStorage.getItem(DAILY_CLAIM_KEY)
             .then(value => setClaimedToday(value === todayKey()))
             .catch(() => setClaimedToday(false));
@@ -117,7 +123,9 @@ export default function HomeScreen({ navigation }: Props) {
                     <View style={styles.flex}>
                         <Text style={styles.featuredKicker}>THE ORIGINAL</Text>
                         <Text style={styles.featuredTitle}>2048</Text>
-                        <Text style={styles.meta}>Merge tiles, earn coins, use powers</Text>
+                        <Text style={styles.meta}>
+                            {best2048 != null ? `Best ${best2048.toLocaleString()}` : 'Merge tiles, earn coins, use powers'}
+                        </Text>
                     </View>
                     <Lucide name="play" size={22} color={colors.ink} />
                 </Pressable>

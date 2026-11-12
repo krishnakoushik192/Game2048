@@ -27,8 +27,8 @@ const LEGACY_BG = '#080c18';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 /**
- * 2048 and its tutorial still use the dark look and expect the safe area to be
- * handled for them. The new screens handle their own insets.
+ * The tutorial still uses the dark look and expects the safe area to be
+ * handled for it. Every other screen handles its own insets.
  */
 function withLegacyFrame<P extends object>(Screen: React.ComponentType<P>) {
   return function LegacyScreen(props: P) {
@@ -43,7 +43,6 @@ function withLegacyFrame<P extends object>(Screen: React.ComponentType<P>) {
   };
 }
 
-const LegacyGame = withLegacyFrame(MainView);
 const LegacyTutorial = withLegacyFrame(TutorialView);
 
 function App() {
@@ -76,7 +75,7 @@ function App() {
                 }}>
                 <Stack.Screen name="Home" component={HomeScreen} />
                 <Stack.Screen name="Tutorial" component={LegacyTutorial} />
-                <Stack.Screen name="Game" component={LegacyGame} />
+                <Stack.Screen name="Game" component={MainView} />
                 <Stack.Screen name="TicTacToe" component={TicTacToeScreen} />
                 <Stack.Screen name="Memory" component={MemoryScreen} />
                 <Stack.Screen name="ColorRecall" component={ColorRecallScreen} />

@@ -11,7 +11,8 @@ export type ResultInfo = {
     scoreLabel: string;
     score: string;
     stats: Array<{ label: string; value: string }>;
-    coins: number;
+    /** Omit to hide the coins row (2048 pays coins during play). */
+    coins?: number;
     isNewBest?: boolean;
     won?: boolean;
 };
@@ -58,10 +59,12 @@ export function ResultModal({
                                     ))}
                                 </View>
                             )}
-                            <View style={styles.coins}>
-                                <Text style={styles.coinsLabel}>Coins earned</Text>
-                                <Text style={styles.coinsValue}>+{result.coins}</Text>
-                            </View>
+                            {result.coins != null && (
+                                <View style={styles.coins}>
+                                    <Text style={styles.coinsLabel}>Coins earned</Text>
+                                    <Text style={styles.coinsValue}>+{result.coins}</Text>
+                                </View>
+                            )}
                         </View>
 
                         <ChunkyButton label="Play again" size="lg" color={colors.ink} textColor={colors.white} onPress={onPlayAgain} />
